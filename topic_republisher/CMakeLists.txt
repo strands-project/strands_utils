@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(strands_utils)
+project(topic_replublisher)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -49,7 +49,7 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs rospy)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES strands_utils
+#  LIBRARIES topic_replublisher
 #  CATKIN_DEPENDS geometry_msgs rospy
 #  DEPENDS system_lib
 )
@@ -63,19 +63,19 @@ catkin_package(
 # include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp library
-# add_library(strands_utils
-#   src/${PROJECT_NAME}/strands_utils.cpp
+# add_library(topic_replublisher
+#   src/${PROJECT_NAME}/topic_replublisher.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(strands_utils_node src/strands_utils_node.cpp)
+# add_executable(topic_replublisher_node src/topic_replublisher_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(strands_utils_node strands_utils_generate_messages_cpp)
+# add_dependencies(topic_replublisher_node topic_replublisher_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(strands_utils_node
+# target_link_libraries(topic_replublisher_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -94,7 +94,7 @@ catkin_package(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS strands_utils strands_utils_node
+# install(TARGETS topic_replublisher topic_replublisher_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -119,7 +119,7 @@ catkin_package(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_strands_utils.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_topic_replublisher.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
