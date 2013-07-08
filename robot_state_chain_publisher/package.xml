@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package>
+  <name>robot_state_chain_publisher</name>
+  <version>0.0.1</version>
+  <description>This package allows you to publish the state of a robot to the transform library topic. In contrast to robot_state_publisher, it publishes the complete kinematic chain. 
+
+  This pacakge has been catkinized, the orignial source can be found here:
+  https://github.com/code-iai/robot_state_chain_publisher.
+  
+  </description>
+
+  <maintainer email="l.kunze@cs.bham.ac.uk">Lars Kunze</maintainer>
+
+  <license>BSD</license>
+
+  <!-- <author email="">Lorenz Moesenlechner</author> --> 
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>kdl_parser</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf_conversions</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>kdl_parser</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  
+</package>
