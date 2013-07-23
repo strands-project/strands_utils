@@ -68,7 +68,11 @@ catkin_package(
 # )
 
 ## Declare a cpp executable
-add_executable(usbreset src/usbreset.c)
+
+## Only compile for non-apple systems as depends on linux-specific header
+if(NOT APPLE)
+	add_executable(usbreset src/usbreset.c)
+endif(NOT APPLE)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
