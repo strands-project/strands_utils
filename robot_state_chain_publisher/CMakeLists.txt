@@ -47,6 +47,12 @@ add_library(robot_state_chain_publisher
     src/robot_state_publisher.cpp
 )
 
+target_link_libraries(robot_state_chain_publisher
+     ${Boost_LIBRARIES}
+     ${catkin_LIBRARIES}
+     robot_state_chain_publisher
+)
+
 ## Declare a cpp executable
 add_executable(state_chain_publisher src/state_publisher.cpp)
 
