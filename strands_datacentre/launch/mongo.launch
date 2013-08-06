@@ -1,0 +1,6 @@
+<launch>
+  <param name="datacentre_port" value="62345" />
+  <node name="mongo_server" pkg="strands_datacentre" type="mongodb_server.py" output="screen">
+	<param name="database_path" value="/tmp/db"/>
+  </node>
+</launch>
