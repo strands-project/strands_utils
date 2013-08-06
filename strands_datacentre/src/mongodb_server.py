@@ -29,7 +29,9 @@ class MongoServer(object):
 
         # What server does mongodb reside
         self._mongo_host = rospy.get_param("datacentre_host", "localhost")
+        rospy.set_param("datacentre_host",self._mongo_host)
         self._mongo_port = rospy.get_param("datacentre_port", 27017)
+        rospy.set_param("datacentre_port",self._mongo_port)
         rospy.loginfo("Mongo server address: "+self._mongo_host+":"+str(self._mongo_port))
     
 
@@ -87,7 +89,7 @@ class MongoServer(object):
                 else:
                     rospy.loginfo(stdout.strip())
 
-                if stdout.find("waiting for connections on port"):
+                if stdout.find("waiting for connections on port") !=-1:
                     self._ready=True
 
         if not rospy.is_shutdown():
