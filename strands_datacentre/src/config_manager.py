@@ -100,7 +100,7 @@ class ConfigManager(object):
                                            self._setparam_srv_cb)
 
         
-        self._list_params()
+        #self._list_params()
         
         # Start the main loop
         rospy.spin()
