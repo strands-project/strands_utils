@@ -3,4 +3,6 @@
   <node name="mongo_server" pkg="strands_datacentre" type="mongodb_server.py" output="screen">
 	<param name="database_path" value="/tmp/db"/>
   </node>
+
+  <node name="config_manager" pkg="strands_datacentre" type="config_manager.py" output="screen"/>
 </launch>
