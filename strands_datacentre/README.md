@@ -44,6 +44,10 @@ rosparam set datacentre_host bob # note that if using multiple machines, 'localh
 rosrun strands_datacentre mongodb_server.py
 ```
 
+By default, the mongod database will be stored in `/opt/strands/strands_datacentre`. This can be overridden by setting the private parameter ~database_path for the node. If it is the first time that the database is used, be sure to first run
+
+```mkdir  /opt/strands/strands_datacentre``` 
+
 If you prefer to use different mongodb instance, set the datacentre_* parameters accordingly.
 
 Next start the config manager:
