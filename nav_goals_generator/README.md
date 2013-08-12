@@ -1,9 +1,10 @@
 nav_goals_generator
 ===================
 
-ROS Service to generate *n* 2D navigation goals in a given map. The service
-also takes an *inflation radius* which ressembles the robot's footprint into
-account.
+ROS Service to generate 2D navigation goals with orientation in a specifed
+region of interest (ROI). The service takes the number of navigation goals
+(*n*), an *inflation radius* which ressembles the robot's footprint, and a ROI
+described by a polygon as arguments and returns a list of goal poses.
 
 
 # Usage
@@ -18,13 +19,24 @@ roslaunch nav_goal_generation nav_goal_generation.launch
 You can send now a service request:
 
 ```
-rosservice call nav_goals_generator 100 0.5
+rosservice call /nav_goals '{n: 100, inflation_radius: 0.5, roi: {points: [[0,0,0],[2,-2,0],[-2,-2,0]]}}'
 ```
 
 whereby the first argument is the number of goal loactions to be generated
 (here 100) and and the second argument is the inflation radius of the robot's
-footprint.  The result of the pose generation is additionally published on the
-topic `/nav_goals` in order to visualize the result in RVIZ.
+footprint (here 0.5), and the third argument is a ROI specified as a list of
+points (at least three).  The result of the pose generation is additionally
+published on the topic `/nav_goals` in order to visualize the result in RVIZ.
+
+If the service is called with an empty ROI, the full map is considered as ROI
+by default. 
+
+```
+rosservice call /nav_goals '{n: 100, inflation_radius: 0.5, roi: {}}'
+```
+
+If a specified ROI includes a point that is outside the map, its *conflicting*
+coordinates are automatically adjusted to the map's bounding box.
 
 # Known Issues
 
