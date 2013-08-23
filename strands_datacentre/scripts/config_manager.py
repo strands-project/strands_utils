@@ -7,38 +7,26 @@ import os
 import collections
 import json
 
+import strands_datacentre.util
+
 from strands_datacentre.srv import *
 from std_srvs.srv import *
 import rosparam
 
-try:
-    import pymongo
-except:
-    print("ERROR!!!")
-    print("Can't import pymongo, this is needed by strands_datacentre.")
-    print("Make sure it is installed (sudo apt-get install python-pymongo)")
+if not strands_datacentre.util.check_for_pymongo():
     sys.exit(1)
-    
-if not "MongoClient" in dir(pymongo):
-    print ("ERROR!!!")
-    print("Can't import required version of pymongo. We need >= 2.3")
-    print("Make sure it is installed (sudo pip install python-pymongo) not apt-get")
-    sys.exit(1)
+
+import pymongo
 
 
 class ConfigManager(object):
     def __init__(self):
         rospy.init_node("config_manager")
         rospy.on_shutdown(self._on_node_shutdown)
-        
-        # Check that mongo is live, create connection
-        try:
-            rospy.wait_for_service("/datacentre/wait_ready",10)
-        except rospy.exceptions.ROSException, e:
-            rospy.logerr("Can't connect to MongoDB server. Make sure strands_datacentre/mongodb_server.py node is started.")
+
+        if not strands_datacentre.util.wait_for_mongo():
             sys.exit(1)
-        wait = rospy.ServiceProxy('/datacentre/wait_ready', Empty)
-        wait()
+        
         self._mongo_client = pymongo.MongoClient(rospy.get_param("datacentre_host","localhost"),
                                                  int(rospy.get_param("datacentre_port")))
 
