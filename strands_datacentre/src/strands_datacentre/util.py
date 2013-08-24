@@ -1,5 +1,6 @@
 import rospy
 from std_srvs.srv import Empty
+import yaml
 
 """
 Waits for the mongo server, as started through the
@@ -36,5 +37,28 @@ def check_for_pymongo():
         return False
     
     return True
-    
-    
+
+"""
+Given a document in the database, return metadata and ROS message
+"""
+def document_to_msg(document, TYPE):
+    meta = document["meta"]
+    msg = TYPE()
+    def fill_msg(msg,dic):
+        for i in dic:
+            if isinstance(dic[i],dict):
+                fill_msg(getattr(msg,i),dic[i])
+            else:
+                setattr(msg,i,dic[i])
+    fill_msg(msg,document["msg"])
+    return meta,msg
+
+"""
+Store a ROS message into the DB
+"""    
+def store_message(collection, msg, meta):
+    doc={}
+    doc["meta"]=meta
+    doc["msg"]=yaml.load(str(msg))  # TODO: this is inefficient, should improve
+    collection.insert(doc)
+
