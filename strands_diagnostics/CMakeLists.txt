@@ -22,7 +22,7 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  StrandsDiagnosticMsg.msg
+  DiagnosticMessage.msg
 )
 
 ## Generate services in the 'srv' folder

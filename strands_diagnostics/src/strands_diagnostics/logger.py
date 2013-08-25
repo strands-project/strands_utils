@@ -1,6 +1,6 @@
 # The implementation of the diagnostics logger 
 from strands_datacentre.util import *
-from strands_diagnostics.msg import StrandsDiagnosticMsg
+from strands_diagnostics.msg import DiagnosticMessage
 
 import rospy
 
@@ -28,7 +28,7 @@ class DiagnosticsLogger(object):
             self.ok = False
             return
         
-        self._diag_subscriber =  rospy.Subscriber("/strands_diagnostics",  StrandsDiagnosticMsg,  self._diagnostic_cb)
+        self._diag_subscriber =  rospy.Subscriber("/strands_diagnostics",  DiagnosticMessage,  self._diagnostic_cb)
 
         host =  rospy.get_param("datacentre_host")
         port =  rospy.get_param("datacentre_port")
