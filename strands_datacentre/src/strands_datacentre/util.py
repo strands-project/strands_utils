@@ -27,13 +27,13 @@ def check_for_pymongo():
     except:
         print("ERROR!!!")
         print("Can't import pymongo, this is needed by strands_datacentre.")
-        print("Make sure it is installed (sudo apt-get install python-pymongo)")
+        print("Make sure it is installed (sudo pip install pymongo)")
         return False
 
     if not "MongoClient" in dir(pymongo):
         print ("ERROR!!!")
         print("Can't import required version of pymongo. We need >= 2.3")
-        print("Make sure it is installed (sudo pip install python-pymongo) not apt-get")
+        print("Make sure it is installed (sudo pip install pymongo) not apt-get")
         return False
     
     return True
