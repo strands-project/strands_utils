@@ -39,18 +39,23 @@ def check_for_pymongo():
     return True
 
 """
+Given a ROS msg and a dictionary of the right values, fill in the msg
+"""
+def _fill_msg(msg,dic):
+    for i in dic:
+        if isinstance(dic[i],dict):
+            fill_msg(getattr(msg,i),dic[i])
+        else:
+            setattr(msg,i,dic[i])
+    
+
+"""
 Given a document in the database, return metadata and ROS message
 """
 def document_to_msg(document, TYPE):
     meta = document["meta"]
     msg = TYPE()
-    def fill_msg(msg,dic):
-        for i in dic:
-            if isinstance(dic[i],dict):
-                fill_msg(getattr(msg,i),dic[i])
-            else:
-                setattr(msg,i,dic[i])
-    fill_msg(msg,document["msg"])
+    _fill_msg(msg,document["msg"])
     return meta,msg
 
 """
@@ -70,3 +75,10 @@ def store_message_no_meta(collection, msg):
     doc=yaml.load(str(msg))  # TODO: this is inefficient, should improve
     collection.insert(doc)
 
+"""
+Load a ROS message from the DB, no meta
+"""
+def document_to_msg_no_meta(document, TYPE):
+    msg = TYPE()
+    _fill_msg(msg, document)
+    return meta, msg
