@@ -44,7 +44,7 @@ class DiagnosticsLogger(object):
 
         
     def _diagnostic_cb(self, msg):
-        collection = self._mongoclient[msg.package][msg.subpackage]
+        collection = self._mongoclient[msg.package][msg.subpackage + "!diagnostics"]
         doc =  {}
         doc["msg"] = json.loads(msg.json_data)
         now =  rospy.get_rostime()
@@ -52,6 +52,10 @@ class DiagnosticsLogger(object):
         collection.insert(doc)
         
     def _rosout_cb(self, msg):
+        if msg.name.find("mongo_server") >  0:
+            return
+        if msg.name.find("diagnostics_logger") >  0:
+            return
         collection = self._mongoclient["rosout_log"][msg.name.replace('/', '')]
         store_message_no_meta(collection, msg)
         
