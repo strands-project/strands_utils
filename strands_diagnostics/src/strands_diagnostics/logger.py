@@ -1,6 +1,7 @@
 # The implementation of the diagnostics logger 
 from strands_datacentre.util import *
 from strands_diagnostics.msg import DiagnosticMessage
+from rosgraph_msgs.msg import Log
 
 import rospy
 
@@ -30,6 +31,11 @@ class DiagnosticsLogger(object):
         
         self._diag_subscriber =  rospy.Subscriber("/strands_diagnostics",  DiagnosticMessage,  self._diagnostic_cb)
 
+        # Logging of rosout this way is not going to be as efficient as by C++ and mongodb_log
+        # package. However, we can split the messages into different collections...
+        # TODO: Integrate better with mongodb_log
+        self._rosout_subscriber =  rospy.Subscriber("/rosout",  Log, self._rosout_cb)
+
         host =  rospy.get_param("datacentre_host")
         port =  rospy.get_param("datacentre_port")
         self._mongoclient = pymongo.MongoClient(host, port)
@@ -44,5 +50,9 @@ class DiagnosticsLogger(object):
         now =  rospy.get_rostime()
         doc["stamp"] = {"secs": now.secs, "nasecs": now.nsecs,}
         collection.insert(doc)
+        
+    def _rosout_cb(self, msg):
+        collection = self._mongoclient["rosout_log"][msg.name.replace('/', '')]
+        store_message_no_meta(collection, msg)
         
         

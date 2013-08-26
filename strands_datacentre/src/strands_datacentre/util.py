@@ -62,3 +62,11 @@ def store_message(collection, msg, meta):
     doc["msg"]=yaml.load(str(msg))  # TODO: this is inefficient, should improve
     collection.insert(doc)
 
+"""
+Store a ROS message sans meta data
+"""
+def store_message_no_meta(collection, msg):
+    #print str(msg)
+    doc=yaml.load(str(msg))  # TODO: this is inefficient, should improve
+    collection.insert(doc)
+
