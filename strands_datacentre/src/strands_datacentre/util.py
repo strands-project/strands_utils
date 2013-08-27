@@ -44,7 +44,7 @@ Given a ROS msg and a dictionary of the right values, fill in the msg
 def _fill_msg(msg,dic):
     for i in dic:
         if isinstance(dic[i],dict):
-            fill_msg(getattr(msg,i),dic[i])
+            _fill_msg(getattr(msg,i),dic[i])
         else:
             setattr(msg,i,dic[i])
     
