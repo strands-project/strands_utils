@@ -9,15 +9,12 @@ import re
 import signal
 import errno
 from std_srvs.srv import *
+import strands_datacentre.util
 
-try:
-    import pymongo
-except:
-    print("ERROR!!!")
-    print("Can't import pymongo, this is needed by strands_datacentre.")
-    print("Make sure it is installed (sudo apt-get install python-pymongo)")
+if not strands_datacentre.util.check_for_pymongo():
     sys.exit(1)
-
+    
+import pymongo
 
 class MongoServer(object):
     def __init__(self):
