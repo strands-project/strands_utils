@@ -92,7 +92,9 @@ class ConfigManager(object):
         self._setparam_srv = rospy.Service("/config_manager/set_param",
                                            SetParam,
                                            self._setparam_srv_cb)
-
+        self._saveparam_srv = rospy.Service("/config_manager/save_param",
+                                           SetParam,
+                                           self._saveparam_srv_cb)
         
         #self._list_params()
         
@@ -151,7 +153,29 @@ class ConfigManager(object):
             config_db_local.update(value,{"$set":new})
             pass
         return SetParamResponse(True)
-            
+
+    #This will take the current value from the rosparam server and save it into the DB
+    def _saveparam_srv_cb(self,req):
+        if not rospy.has_param(req.param):
+            rospy.logerr("Trying to set parameter but not giving full spec")
+            return SetParamResponse(False)
+        val=rospy.get_param(req.param)
+        if type(val) is str:
+            mystring='{"path":"'+ str(req.param) +'","value":"'+ val +'"}'
+        else:
+            mystring='{"path":"'+ str(req.param) +'","value":'+ str(val) +'}'
+        new = json.loads(mystring)
+        config_db_local = self._mongo_client.config.local
+        value = config_db_local.find_one({"path":new["path"]})
+        if value is None:
+            # insert it
+            config_db_local.insert(new)
+        else:
+            # update it
+            config_db_local.update(value,{"$set":new})
+            pass
+        return SetParamResponse(True)
+   
 
 if __name__ == '__main__':
     server = ConfigManager()
