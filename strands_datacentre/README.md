@@ -7,10 +7,15 @@ Two nodes are provided:
 - mongodb_server.py
 - config_manager.py
 
-These node depends on MongoDB and the Python client libraries. Install by:
+These node depends on MongoDB and the Python client libraries (>=2.3). Install by:
 
 ```
 sudo apt-get install python-pymongo mongodb
+```
+If this does not give the required version, you can use:
+
+```
+sudo pip install pymongo
 ```
 
 Config Manager Overview
