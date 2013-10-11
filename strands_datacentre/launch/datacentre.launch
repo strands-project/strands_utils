@@ -1,7 +1,8 @@
 <launch>
   <arg name="db_path" default="/opt/strands/strands_datacentre"/>
+  <arg name="port" default="62345" />
 
-  <param name="datacentre_port" value="62345" />
+  <param name="datacentre_port" value="$(arg port)" />
   <param name="datacentre_host" value="$(env HOSTNAME)" />
   <node name="mongo_server" pkg="strands_datacentre" type="mongodb_server.py" output="screen">
 	<param name="database_path" value="$(arg db_path)"/>
