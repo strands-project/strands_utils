@@ -21,7 +21,7 @@ function warn {
 		firefox /localhome/patroller/recovery/index.html&
 }
 
-source $HOME/setup.bash
+source /opt/strands/strands_catkin_ws/devel/setup.bash
 if [ $# == 1 ]; then 
 if [ $1 == 'test' ]; then warn test; fi;fi
 if [ $(rostopic echo -n 1 /battery_state|grep powerSupplyPresent|grep -c True) == 0 ];then 
