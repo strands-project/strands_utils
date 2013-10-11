@@ -7,10 +7,15 @@ Two nodes are provided:
 - mongodb_server.py
 - config_manager.py
 
-These node depends on MongoDB and the Python client libraries. Install by:
+These node depends on MongoDB and the Python client libraries (>=2.3). Install by:
 
 ```
 sudo apt-get install python-pymongo mongodb
+```
+If this does not give the required version, you can use:
+
+```
+sudo pip install pymongo
 ```
 
 Running the mongodb_server
@@ -97,7 +102,13 @@ rosservice call /config_manager/set_param "param: '{\"path\":\"/chris\",\"value\
 
 Note the syntax of the parameter: it is a json representation of a dictionary with path and value keys.
 
-2) Using the database server directly
+2) Using the config_manager service:
+```
+rosservice call /config_manager/save_param name_of_the_parameter_to_be_saved
+```
+Note: This will save the current value of the parameter into the locals database
+
+3) Using the database server directly
 
 
 Launch files
@@ -109,3 +120,4 @@ HOSTNAME=yourhost roslaunch strands_datacentre datacentre.launch db_path:=/path/
 ```
 
 The HOSTNAME env variable is required; db_path will default to /opt/strands/strands_datacentre and db_port will default to 62345. 
+

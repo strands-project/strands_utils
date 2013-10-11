@@ -1,0 +1,11 @@
+Hi,
+
+this is Linda. I YYY during my latest patrol and cannot reach my charging station.
+My battery level is XXX %, so I will have to switch off in ZZh hours and ZZm minutes. 
+Please help me. All you have to do is to come to the robotics lab and put me on the charging station.
+Detailed instructions will be displayed on my screen.
+
+Thank you,
+
+Linda
+
