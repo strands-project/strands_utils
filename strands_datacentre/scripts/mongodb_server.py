@@ -18,7 +18,7 @@ import pymongo
 
 class MongoServer(object):
     def __init__(self):
-        rospy.init_node("mongodb_server")#, disable_signals=True)
+        rospy.init_node("mongodb_server", anonymous=True)#, disable_signals=True)
         rospy.on_shutdown(self._on_node_shutdown)
 
         # Get the database path
@@ -40,7 +40,7 @@ class MongoServer(object):
         except subprocess.CalledProcessError:
             rospy.logerr("Can't find MongoDB executable. Is it installed?\nInstall it with  \"sudo apt-get install mongodb\"")
             sys.exit(1)
-        rospy.loginfo("Foung MongoDB version " + self._mongo_version)
+        rospy.loginfo("Found MongoDB version " + self._mongo_version)
 
         # Check that the provided db path exists.
         if not os.path.exists(self._db_path):
