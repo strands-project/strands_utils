@@ -48,3 +48,4 @@ Issues:
 
 ROS must be running so that battery status can be read - this might be substituted by MIRA driver if we'll experience issues with ROS.
 
+Even with the PC turned off, the control panel indicates that the robot consumes 0.6~A. This might be further reduced by shutting down the other devices (SICK, motors etc.) through a MIRA driver.
