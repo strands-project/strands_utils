@@ -6,7 +6,7 @@ Should the battery level fall below another threshold, the script will attempt t
 
 The email contains a link to a detailed recovery procedure with pictures, so the recovery can be performed by inexperienced users ( maybe even professors ).
 
-Prerequisites:
+Prerequisities:
 
 Mailx email client: http://en.wikipedia.org/wiki/Mailx must be configured.
 
@@ -24,7 +24,7 @@ user hostname =NOPASSWD: /usr/bin/shutdown -h now,/usr/bin/halt,/usr/bin/powerof
 
 2) Edit and copy the .batterycheck to the home directory.
 
-To set up where the emails are send, change the addresses in the first two lines of the .batterycheck file. 
+To set up where the emails are send, change the adresses in the first two lines of the .batterycheck file. 
 
 Copy the file to the home directory:  cp .batterycheck ~/
 
