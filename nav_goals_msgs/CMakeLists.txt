@@ -30,6 +30,7 @@ find_package(catkin REQUIRED COMPONENTS std_msgs geometry_msgs message_generatio
 add_service_files(
    FILES
    NavGoals.srv
+   WeightedNavGoals.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -49,8 +50,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #   INCLUDE_DIRS include
-#  LIBRARIES nav_goals_msgs
-#  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs
+#   LIBRARIES nav_goals_msgs
+#   CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 

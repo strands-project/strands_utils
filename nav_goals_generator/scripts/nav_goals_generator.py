@@ -7,7 +7,11 @@ from nav_goals_msgs.srv import *
 from geometry_msgs.msg import PoseArray
 from geometry_msgs.msg import Pose
 from geometry_msgs.msg import Point32
+from geometry_msgs.msg import Point
 from nav_msgs.msg import OccupancyGrid
+
+from visualization_msgs.msg import Marker
+from visualization_msgs.msg import MarkerArray
 
 import random
 import math
@@ -80,6 +84,10 @@ class NavGoalsGenerator():
             # visualizing nav goals in RVIZ
             self.pub = rospy.Publisher('nav_goals', PoseArray)
 
+            # visualizing nav goals in RVIZ
+            self.pubmarker = rospy.Publisher('visualization_marker_array', MarkerArray)
+            self.marker_len = 0
+            
             rospy.spin()
             rospy.loginfo("Stopped nav_goals_generator service")
 
@@ -114,6 +122,9 @@ class NavGoalsGenerator():
             res.goals.header.frame_id = self.map_frame
             res.goals.poses = []
 
+            self.delete_markers()            
+            markerArray = MarkerArray()
+
             # generate random goal poses
             while len(res.goals.poses) < self.n: 
                         
@@ -130,7 +141,7 @@ class NavGoalsGenerator():
                     yaw = random.uniform(0, 2*math.pi)
 
                     q = list(tf.transformations.quaternion_about_axis(yaw, (0,0,1)))
-
+                    
                     pose.orientation.x = q[0]
                     pose.orientation.y = q[1]
                     pose.orientation.z = q[2]
@@ -138,9 +149,51 @@ class NavGoalsGenerator():
 
                     #rospy.loginfo("pose x: %s, y: %s", pose.position.x, pose.position.y)
                     res.goals.poses.append(pose)
+                    
+                    self.create_marker(markerArray,len(res.goals.poses)-1, pose)
+
+
 
             self.pub.publish(res.goals)
+
+            self.marker_len =  len(markerArray.markers)
+            #self.pubmarker.publish(markerArray)
+
             return res
+
+        def create_marker(self,markerArray, marker_id, pose):
+            marker1 = Marker()
+            marker1.id = marker_id 
+            marker1.header.frame_id = "/map"
+            marker1.type = marker1.TRIANGLE_LIST
+            marker1.action = marker1.ADD
+            marker1.scale.x = 1
+            marker1.scale.y = 1
+            marker1.scale.z = 1
+            marker1.color.a = 0.1
+            marker1.color.r = 1.0
+            marker1.color.g = 0.0
+            marker1.color.b = 0.0
+            marker1.pose.orientation = pose.orientation
+            marker1.pose.position = pose.position
+            marker1.points = [Point(0,0,0),Point(3,-1.5,0),Point(3,1.5,0)]
+
+            markerArray.markers.append(marker1)
+
+
+        def delete_markers(self):
+            markerArray = MarkerArray()
+            for i in range(0,self.marker_len):
+                marker = Marker()
+                marker.header.frame_id = "/map"
+                marker.id = i
+                marker.action = marker.DELETE
+                markerArray.markers.append(marker)
+            self.pubmarker.publish(markerArray)
+
+
+                
+            
 
         def process_arguments(self):
             # n must be positive
