@@ -18,6 +18,25 @@ If this does not give the required version, you can use:
 sudo pip install pymongo
 ```
 
+Running the mongodb_server
+--------------------------
+The start the datacentre:
+
+```
+rosparam set datacentre_port 62345
+rosparam set datacentre_host bob # note that if using multiple machines, 'localhost' is no good
+
+rosrun strands_datacentre mongodb_server.py
+```
+
+By default, the mongod database will be stored in `/opt/strands/strands_datacentre`. This can be overridden by setting the private parameter ~database_path for the node. If it is the first time that the database is used, be sure to first run
+
+```mkdir  /opt/strands/strands_datacentre``` 
+
+If you prefer to use different mongodb instance, set the datacentre_* parameters accordingly.
+
+
+
 Config Manager Overview
 -----------------------
 
@@ -37,25 +56,11 @@ At start up, the config manager places all parameters onto the ros parameter ser
 Likewise, local parameter overrides can be set using the /config_manager/set_param service or by directly editing the "local" collection in the configs database.
 
 
-Running
--------
+Running config manager
+----------------------
 
-To start the config manager, make sure that you have the mongo db running:
+To start the config manager, make sure that you have the mongo db running then:
 
-```
-rosparam set datacentre_port 62345
-rosparam set datacentre_host bob # note that if using multiple machines, 'localhost' is no good
-
-rosrun strands_datacentre mongodb_server.py
-```
-
-By default, the mongod database will be stored in `/opt/strands/strands_datacentre`. This can be overridden by setting the private parameter ~database_path for the node. If it is the first time that the database is used, be sure to first run
-
-```mkdir  /opt/strands/strands_datacentre``` 
-
-If you prefer to use different mongodb instance, set the datacentre_* parameters accordingly.
-
-Next start the config manager:
 
 ```
 rosrun strands_datacentre config_manager.py
@@ -65,6 +70,8 @@ This will load all parameters onto the ros parameter server, which can be checke
 ```
 rosparam list
 ```
+
+
 
 
 Reading parameters
@@ -102,3 +109,15 @@ rosservice call /config_manager/save_param name_of_the_parameter_to_be_saved
 Note: This will save the current value of the parameter into the locals database
 
 3) Using the database server directly
+
+
+Launch files
+============
+Both mongodb and config_manager can be started together using the datacentre.launch file:
+
+```
+HOSTNAME=yourhost roslaunch strands_datacentre datacentre.launch db_path:=/path/to/db db_port:=62345
+```
+
+The HOSTNAME env variable is required; db_path will default to /opt/strands/strands_datacentre and db_port will default to 62345. 
+
