@@ -1,6 +1,8 @@
 import rospy
+import genpy
 from std_srvs.srv import Empty
 import yaml
+import json
 
 """
 Waits for the mongo server, as started through the
@@ -58,21 +60,45 @@ def document_to_msg(document, TYPE):
     _fill_msg(msg,document["msg"])
     return meta,msg
 
+
+""" De-rosify a msg """
+def sanitize_value(v):
+    if isinstance(v, rospy.Message):
+        return msg_to_document(v)
+    elif isinstance(v, genpy.rostime.Time):
+        return msg_to_document(v)
+    elif isinstance(v, genpy.rostime.Duration):
+         return msg_to_document(v)
+    elif isinstance(v, list):
+        return [sanitize_value(t) for t in v]
+    else:
+        return v
+
+    
+"""
+Given a ROS message, turn it into something suitable for the datacentre
+"""
+def msg_to_document(msg):
+    d = {}
+    for f in msg.__slots__:
+        d[f] = sanitize_value(getattr(msg, f))
+    return d
+
+
 """
 Store a ROS message into the DB
 """    
 def store_message(collection, msg, meta):
     doc={}
     doc["meta"]=meta
-    doc["msg"]=yaml.load(str(msg))  # TODO: this is inefficient, should improve
+    doc["msg"]=msg_to_document(msg)
     collection.insert(doc)
 
 """
 Store a ROS message sans meta data
 """
 def store_message_no_meta(collection, msg):
-    #print str(msg)
-    doc=yaml.load(str(msg))  # TODO: this is inefficient, should improve
+    doc=msg_to_document(msg)
     collection.insert(doc)
 
 """
