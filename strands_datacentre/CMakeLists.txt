@@ -31,6 +31,9 @@ add_service_files(
   FILES
   GetParam.srv
   SetParam.srv
+  MongoFind.srv
+  MongoUpdate.srv
+  MongoInsert.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
