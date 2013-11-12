@@ -22,15 +22,23 @@ function warn {
 }
 
 source /opt/strands/strands_catkin_ws/devel/setup.bash
-if [ $# == 1 ]; then 
-if [ $1 == 'test' ]; then warn test; fi;fi
+if [ $# == 3 ]; then 
+if [ $3 == 'test' ]; then warn test; fi;fi
 if [ $(rostopic echo -n 1 /battery_state|grep powerSupplyPresent|grep -c True) == 0 ];then 
-if [ $(($(rostopic echo -n 1 /battery_state |grep lifePercent|cut -f 2 -d ' ') < 50)) == 1 ];
+if [ $(($(rostopic echo -n 1 /battery_state |grep lifePercent|cut -f 2 -d ' ') < $1)) == 1 ];
 then
 warn
 fi
-if [ $(($(rostopic echo -n 1 /battery_state |grep lifePercent|cut -f 2 -d ' ') < 30)) == 1 ];
+if [ $(($(rostopic echo -n 1 /battery_state |grep lifePercent|cut -f 2 -d ' ') < $2)) == 1 ];
 then
+rosrun dynamic_reconfigure dynparam set /EBC Port0_5V_Enabled False
+rosrun dynamic_reconfigure dynparam set /EBC Port0_12V_Enabled False
+rosrun dynamic_reconfigure dynparam set /EBC Port0_24V_Enabled False
+rosrun dynamic_reconfigure dynparam set /EBC Port1_5V_Enabled False
+rosrun dynamic_reconfigure dynparam set /EBC Port1_12V_Enabled False 
+rosrun dynamic_reconfigure dynparam set /EBC Port1_24V_Enabled False
 echo "sudo /sbin/shutdown -P now"
 fi
 fi
+
+
