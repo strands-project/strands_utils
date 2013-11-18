@@ -19,9 +19,9 @@ public:
     : it_(nh_)
   {
     // Subscrive to input video feed and publish output video feed
-    image_sub_ = it_.subscribe("/head_xtion/rgb/image_color", 1, 
+    image_sub_ = it_.subscribe("/webthrottle/image", 1, 
       &ImageConverter::imageCb, this);
-    image_pub_ = it_.advertise("/image_converter/output_video", 1);
+    image_pub_ = it_.advertise(ros::this_node::getName()+"/output_video", 1);
 
     cv::namedWindow(OPENCV_WINDOW);
   }
@@ -52,8 +52,8 @@ public:
 //    if (cv_out_ptr->image.rows > 60 && cv_out_ptr->image.cols > 60)
 //      cv::circle(cv_out_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
     // Update GUI Window
-    cv::imshow(OPENCV_WINDOW, cv_out_ptr->image);
-    cv::waitKey(3);
+    //cv::imshow(OPENCV_WINDOW, cv_out_ptr->image);
+    //cv::waitKey(3);
     
     // Output modified video stream
     image_pub_.publish(cv_out_ptr->toImageMsg());
@@ -62,7 +62,7 @@ public:
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "image_converter");
+  ros::init(argc, argv, "image_blurrer");
   ImageConverter ic;
   ros::spin();
   return 0;
