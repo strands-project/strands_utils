@@ -1,0 +1,21 @@
+        # self.start_time = None
+        # self.start_mileage = 0
+        # self.bumper_hits=[]
+        # self.navigation_fails=[]
+        # self.finish_time = None
+        # self.start_mileage = 0
+        # self.finish_mileage = 0
+        # self.stamped_mileage=[]
+        # self.stamped_battery=[]
+        # self.stamped_charges=[]
+        # self.waypoints_stamps=[]
+        # self.active_point_name = ""
+
+achievements:
+  run_duration: 
+  - {val: 0, achievement: "Let's get cracking"}
+  - {val: 1, achievement: "I've run for an hour"}
+  - {val: 10, achievement: "I've run for ten hours"}
+  distance:
+  - {val: 1, achievement: "I've run for one kilometre"}
+  - {val: 10, achievement: "I've run for ten kilometres"}
