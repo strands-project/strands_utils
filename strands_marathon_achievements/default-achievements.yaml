@@ -16,12 +16,17 @@ achievements:
   - {val: 0, achievement: "Let's get cracking"}
   - {val: 1, achievement: "I've run for an hour"}
   - {val: 10, achievement: "I've run for ten hours"}
-  - {val: 24, achievement: "I've run a whole day"}
+  - {val: 24, achievement: "I've run for a whole day without a human"}
+  - {val: 48, achievement: "I make that 2 days of autonomous running"}
+  - {val: 72, achievement: "3 days without unasked for human intervention"}
+  - {val: 96, achievement: "4 days. I am probably the winner then"}
+  - {val: 120, achievement: "And the award for unlikely longevity goes to"}
   distance:
   - {val: 1000, achievement: "I've run for one kilometre"}
-  - {val: 10000, achievement: "I've run for ten kilometres"}
+  - {val: 10000, achievement: "I've now driven ten kilometres. My wheels hurt."}
+  - {val: 50000, achievement: "50 kilometres down. How much futher can I go..."}
   - {val: 38.62, achievement: "I've just completed an actual marathon."}
-  - {val: 100000, achievement: "I've run for one hundred kilometres"}
+  - {val: 100000, achievement: "I've run for one hundred kilometres. Really."}
   bumper_hits:
   - {val: 1, achievement: "I've been bumped once"}
   - {val: 10, achievement: "I've been bumped ten times. Watch out people"}
