@@ -21,5 +21,8 @@ achievements:
   - {val: 10, achievement: "I've run for ten kilometres"}
   bumper_hits:
   - {val: 1, achievement: "I've been bumped once"}
-  should_be_ignored:
-  - {val: 1, achievement: "I've been bumped once"}
+  stamped_charges:
+  - {val: 1, achievement: "I've charged once"}
+  waypoints_stamps:
+  - {val: 1, achievement: "I've visited my first waypoint"}
+  - {val: 10, achievement: "I've visited ten waypoints"}

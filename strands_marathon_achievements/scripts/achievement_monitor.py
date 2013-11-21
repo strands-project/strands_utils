@@ -3,6 +3,8 @@
 import roslib
 import rospy
 import pymongo
+import strands_tweets.srv
+import ros_mary_tts.srv 
 from  waypoint_patroller import log_util
 
         # self.start_time = None
@@ -18,11 +20,34 @@ from  waypoint_patroller import log_util
         # self.waypoints_stamps=[]
         # self.active_point_name = ""
 
+tweet_achievements = True
+speak_achievements = False
+
+tweet_service = None
+speech_service = None
+
 def wipe_achievement_records(achievements_db):
 	achievements_db.remove()
 
 def broadcase_achievement(type, current_value, target_value, achievement):
+
+	achievement_text = 'Achievement Unlocked! ' + achievement
+	
+	if tweet_achievements:
+		try:
+			tweet_service(achievement_text + ' #RobotMarathon', False)
+		except rospy.ServiceException as exc: 
+			print("Service did not process request: " + str(exc))
+
+	if speak_achievements:
+		try:
+			speech_service(achievement_text)
+		except rospy.ServiceException as exc: 
+			print("Service did not process request: " + str(exc))
+
+
 	print achievement
+
 
 def handle_achievement(achievements_db, type, current_value, target_value, achievement):
 
@@ -74,6 +99,16 @@ if __name__ == '__main__':
 		rospy.loginfo("Wiping records of achievements from database")
 		wipe_achievement_records(achievements_db)
 
+
+	tweet_achievements = rospy.get_param("~tweet_achievements", False)
+	if tweet_achievements:
+		tweet_service = rospy.ServiceProxy('/strands_tweets/Tweet', strands_tweets.srv.Tweet)  
+
+	speak_achievements = rospy.get_param("~speak_achievements", False)
+	if speak_achievements:
+		speech_service = rospy.ServiceProxy('/ros_mary', ros_mary_tts.srv.ros_mary)  
+
+
 	rate = rospy.Rate(0.1) # in hz -- summary is only updated every 5 minutes 
 	while not rospy.is_shutdown():
 
@@ -95,7 +130,7 @@ if __name__ == '__main__':
 
 			for achievement_target in achievement_targets:
 
-				rospy.loginfo("is %s >= %s : %s", test_val, achievement_target['val'], test_val >= achievement_target['val'])
+				rospy.logdebug("is %s >= %s : %s", test_val, achievement_target['val'], test_val >= achievement_target['val'])
 				if test_val >= achievement_target['val']:
 					handle_achievement(achievements_db, achievement_type, test_val, achievement_target['val'], achievement_target['achievement'])
 
