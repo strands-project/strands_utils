@@ -21,3 +21,5 @@ achievements:
   - {val: 10, achievement: "I've run for ten kilometres"}
   bumper_hits:
   - {val: 1, achievement: "I've been bumped once"}
+  should_be_ignored:
+  - {val: 1, achievement: "I've been bumped once"}

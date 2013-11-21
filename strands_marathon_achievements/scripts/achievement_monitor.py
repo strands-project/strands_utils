@@ -35,6 +35,29 @@ def handle_achievement(achievements_db, type, current_value, target_value, achie
 		achievements_db.insert(achievement_doc)
 
 
+def create_test_val(achievement_type, episode):
+
+	test_val = None
+
+	# translate stat into target value type
+	if achievement_type == 'run_duration':
+		# hours
+		test_val = (latest.stamped_mileage[-1][1].total_seconds()/60)/60
+	elif achievement_type == 'distance':
+		# km
+		test_val = latest.stamped_mileage[-1][0]
+	else:
+		try:
+			# try to match achievement_type to a field from the episoode
+			test_val = episode.__dict__[achievement_type]
+			# if this is a list of things, assume we want the count instead
+			if isinstance(test_val, list):
+				test_val = len(test_val)
+		except KeyError, e:
+			rospy.loginfo("episode struct doesn't have field %s", achievement_type)	
+		
+
+	return test_val
 
 
 if __name__ == '__main__':
@@ -66,23 +89,13 @@ if __name__ == '__main__':
 
 		for achievement_type in achievement_list:
 
-			test_val = None
-
-			# translate stat into target value type
-			if achievement_type == 'run_duration':
-				# hours
-				test_val = (latest.stamped_mileage[-1][1].total_seconds()/60)/60
-			elif achievement_type == 'distance':
-				# km
-				test_val = latest.stamped_mileage[-1][0]
+			test_val = create_test_val(achievement_type, latest)
 			
-			print test_val
-
 			achievement_targets = achievement_list[achievement_type]
 
 			for achievement_target in achievement_targets:
 
-				rospy.logdebug("is %s >= %s : %s", test_val, achievement_target['val'], test_val >= achievement_target['val'])
+				rospy.loginfo("is %s >= %s : %s", test_val, achievement_target['val'], test_val >= achievement_target['val'])
 				if test_val >= achievement_target['val']:
 					handle_achievement(achievements_db, achievement_type, test_val, achievement_target['val'], achievement_target['achievement'])
 
