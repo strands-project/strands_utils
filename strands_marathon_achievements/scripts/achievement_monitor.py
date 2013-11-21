@@ -47,8 +47,9 @@ if __name__ == '__main__':
 	db=client.autonomous_patrolling 
 	achievements_db=db["achievements"]
 	
-	# dor debugging, wipe all records of previous achievements
-	wipe_achievement_records(achievements_db)
+	if rospy.get_param("~wipe_achievements", False):
+		rospy.loginfo("Wiping records of achievements from database")
+		wipe_achievement_records(achievements_db)
 
 	rate = rospy.Rate(0.1) # in hz -- summary is only updated every 5 minutes 
 	while not rospy.is_shutdown():
@@ -81,8 +82,7 @@ if __name__ == '__main__':
 
 			for achievement_target in achievement_targets:
 
-				# print achievement_target['val']				
-
+				rospy.logdebug("is %s >= %s : %s", test_val, achievement_target['val'], test_val >= achievement_target['val'])
 				if test_val >= achievement_target['val']:
 					handle_achievement(achievements_db, achievement_type, test_val, achievement_target['val'], achievement_target['achievement'])
 

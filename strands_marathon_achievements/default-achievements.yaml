@@ -19,3 +19,5 @@ achievements:
   distance:
   - {val: 1, achievement: "I've run for one kilometre"}
   - {val: 10, achievement: "I've run for ten kilometres"}
+  bumper_hits:
+  - {val: 1, achievement: "I've been bumped once"}
