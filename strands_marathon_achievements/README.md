@@ -1,4 +1,4 @@
-# Aannouncing achievements
+# Announcing achievements
 
 This package contains a node which monitors the current episode of the robot's patrolling for times when it passes certain milestone points. When it hits these points it then tweets and/or speaks an announcement of this achievement.
 
