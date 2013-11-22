@@ -13,7 +13,7 @@ using namespace std;
 int save;
 
 ros::Publisher mileage_pub;
-std_msgs::Float64 total_distance;
+double total_distance;
 geometry_msgs::Point last_point;
 ros::ServiceClient client;
 strands_datacentre::SetParam srv;
@@ -34,28 +34,30 @@ void setUpdated(bool up) {
 void updateMileageCallback(const std_msgs::Float32::ConstPtr &mileage)
 {
     ROS_INFO("Update mileage");
-    if(mileage->data > total_distance.data){
-        total_distance.data = mileage->data;
+    if(mileage->data > total_distance){
+        total_distance = mileage->data;
     }
     setUpdated(true);
 }
 
 void callback(const nav_msgs::Odometry::ConstPtr &odom)
 {
-    if(last_point.x == 0 && last_point.y == 0 && last_point.z == 0) {
+    if(isnan(last_point.x) && isnan(last_point.y) && isnan(last_point.z)) {
         last_point = odom->pose.pose.position;
         return;
     }
 
     double distance = sqrt(pow(odom->pose.pose.position.x-last_point.x,2)+pow(odom->pose.pose.position.y-last_point.y,2));
-    total_distance.data += distance;
+    total_distance += distance;
 
-    mileage_pub.publish(total_distance);
+    std_msgs::Float32 pub_dist;
+    pub_dist.data = (float) total_distance;
+    mileage_pub.publish(pub_dist);
 
     last_point = odom->pose.pose.position;
 
     if(save % save_interval == 0) {
-        ros::param::set("/saved_mileage",total_distance.data);
+        ros::param::set("/saved_mileage",total_distance);
         srv.request.param = "saved_mileage";
         if (client.call(srv))
             ROS_DEBUG("Save mileage: success");
@@ -80,9 +82,9 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "odom_mileage");
     ros::NodeHandle n;
 
-    last_point.x = 0;
-    last_point.y = 0;
-    last_point.z = 0;
+    last_point.x = NAN;
+    last_point.y = NAN;
+    last_point.z = NAN;
 
     save = 1;
     updated = false;
@@ -98,7 +100,7 @@ int main(int argc, char **argv)
     private_node_handle_.param("mileage_topic", mileage_topic, string("/odom_mileage"));
     private_node_handle_.param("odom_topic", odom_topic, string("/odom"));
     private_node_handle_.param("save_interval", save_interval, 500);
-    n.param("/saved_mileage", total_distance.data, 0.0);
+    n.param("/saved_mileage", total_distance, 0.0);
     updateMileage(n);
 
     client = n.serviceClient<strands_datacentre::SetParam>("/config_manager/save_param");
@@ -108,7 +110,7 @@ int main(int argc, char **argv)
 //    ros::Subscriber sub = n.subscribe("/mileage", 1, &updateMileageCallback);
 
     // Create a publisher
-    mileage_pub = n.advertise<std_msgs::Float64>(mileage_topic.c_str(), 10);
+    mileage_pub = n.advertise<std_msgs::Float32>(mileage_topic.c_str(), 10);
 
     ros::spin();
     return 0;
