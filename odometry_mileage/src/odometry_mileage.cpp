@@ -1,9 +1,11 @@
 #include <ros/ros.h>
 #include <ros/time.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Point.h>
 #include <strands_datacentre/SetParam.h>
+#include <boost/thread.hpp>
 
 #include <math.h>
 
@@ -16,6 +18,27 @@ geometry_msgs::Point last_point;
 ros::ServiceClient client;
 strands_datacentre::SetParam srv;
 int save_interval;
+bool updated;
+boost::mutex mutex;
+
+bool isUpdated() {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    return updated;
+}
+
+void setUpdated(bool up) {
+    boost::lock_guard<boost::mutex> lock(mutex);
+    updated = up;
+}
+
+void updateMileageCallback(const std_msgs::Float32::ConstPtr &mileage)
+{
+    ROS_INFO("Update mileage");
+    if(mileage->data > total_distance.data){
+        total_distance.data = mileage->data;
+    }
+    setUpdated(true);
+}
 
 void callback(const nav_msgs::Odometry::ConstPtr &odom)
 {
@@ -43,6 +66,14 @@ void callback(const nav_msgs::Odometry::ConstPtr &odom)
     save++;
 }
 
+void updateMileage(ros::NodeHandle &n) {
+    ros::Subscriber sub = n.subscribe("/mileage", 1, &updateMileageCallback);
+    while(!isUpdated()) {
+        ros::spinOnce();
+    }
+    sub.shutdown();
+}
+
 int main(int argc, char **argv)
 {
     // Set up ROS.
@@ -54,6 +85,7 @@ int main(int argc, char **argv)
     last_point.z = 0;
 
     save = 1;
+    updated = false;
 
     // Declare variables that can be modified by launch file or command line.
     string mileage_topic;
@@ -67,11 +99,13 @@ int main(int argc, char **argv)
     private_node_handle_.param("odom_topic", odom_topic, string("/odom"));
     private_node_handle_.param("save_interval", save_interval, 500);
     n.param("/saved_mileage", total_distance.data, 0.0);
+    updateMileage(n);
 
     client = n.serviceClient<strands_datacentre::SetParam>("/config_manager/save_param");
 
     //Create a subscriber
     ros::Subscriber odom_sub = n.subscribe(odom_topic.c_str(), 50, &callback);
+//    ros::Subscriber sub = n.subscribe("/mileage", 1, &updateMileageCallback);
 
     // Create a publisher
     mileage_pub = n.advertise<std_msgs::Float64>(mileage_topic.c_str(), 10);
