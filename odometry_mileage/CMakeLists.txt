@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   geometry_msgs
+  strands_datacentre
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +109,7 @@ add_executable(odometry_mileage src/odometry_mileage.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(odometry_mileage_node odometry_mileage_generate_messages_cpp)
+add_dependencies(odometry_mileage strands_datacentre_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(odometry_mileage

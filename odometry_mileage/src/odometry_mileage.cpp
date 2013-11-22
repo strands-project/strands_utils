@@ -3,14 +3,19 @@
 #include <std_msgs/Float64.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Point.h>
+#include <strands_datacentre/SetParam.h>
 
 #include <math.h>
 
 using namespace std;
+int save;
 
 ros::Publisher mileage_pub;
 std_msgs::Float64 total_distance;
 geometry_msgs::Point last_point;
+ros::ServiceClient client;
+strands_datacentre::SetParam srv;
+int save_interval;
 
 void callback(const nav_msgs::Odometry::ConstPtr &odom)
 {
@@ -26,6 +31,16 @@ void callback(const nav_msgs::Odometry::ConstPtr &odom)
 
     last_point = odom->pose.pose.position;
 
+    if(save % save_interval == 0) {
+        ros::param::set("/mileage",total_distance.data);
+        srv.request.param = "mileage";
+        if (client.call(srv))
+            ROS_DEBUG("Save mileage: success");
+        else
+            ROS_WARN("Save mileage: failed");
+        save = 0;
+    }
+    save++;
 }
 
 int main(int argc, char **argv)
@@ -38,7 +53,7 @@ int main(int argc, char **argv)
     last_point.y = 0;
     last_point.z = 0;
 
-    total_distance.data = 0;
+    save = 1;
 
     // Declare variables that can be modified by launch file or command line.
     string mileage_topic;
@@ -50,8 +65,13 @@ int main(int argc, char **argv)
     ros::NodeHandle private_node_handle_("~");
     private_node_handle_.param("mileage_topic", mileage_topic, string("/odom_mileage"));
     private_node_handle_.param("odom_topic", odom_topic, string("/odom"));
+    private_node_handle_.param("save_interval", save_interval, 500);
+    n.param("/mileage", total_distance.data, 0.0);
 
-    ros::Subscriber odom_sub = n.subscribe(odom_topic.c_str(), 10, &callback);
+    client = n.serviceClient<strands_datacentre::SetParam>("/config_manager/save_param");
+
+    //Create a subscriber
+    ros::Subscriber odom_sub = n.subscribe(odom_topic.c_str(), 50, &callback);
 
     // Create a publisher
     mileage_pub = n.advertise<std_msgs::Float64>(mileage_topic.c_str(), 10);
