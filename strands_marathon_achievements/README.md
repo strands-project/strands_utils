@@ -64,7 +64,7 @@ achievements:
   distance:
   - {val: 1000, achievement: "I've run for one kilometre"}
   - {val: 10000, achievement: "I've run for ten kilometres"}
-  - {val: 38.62, achievement: "I've just completed an actual marathon."}
+  - {val: 42.195, achievement: "I've just completed an actual marathon."}
   - {val: 100000, achievement: "I've run for one hundred kilometres"}
   bumper_hits:
   - {val: 1, achievement: "I've been bumped once"}
