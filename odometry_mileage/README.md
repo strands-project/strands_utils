@@ -11,5 +11,5 @@ is every 500 odometry messages, which is every ~10 seconds. This can be change v
 
 To initialise your node with the current mileage on the robot do: *(Only do this before you launche the node for the first time!)*
 * `rostopic echo -n 1 /mileage` and copy that value
-* `rosparam set mileage <your mileage value>`
-* `rosservice call /config_manager/save_param mileage`
+* `rosparam set saved_mileage <your mileage value>`
+* `rosservice call /config_manager/save_param saved_mileage`

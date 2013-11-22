@@ -32,8 +32,8 @@ void callback(const nav_msgs::Odometry::ConstPtr &odom)
     last_point = odom->pose.pose.position;
 
     if(save % save_interval == 0) {
-        ros::param::set("/mileage",total_distance.data);
-        srv.request.param = "mileage";
+        ros::param::set("/saved_mileage",total_distance.data);
+        srv.request.param = "saved_mileage";
         if (client.call(srv))
             ROS_DEBUG("Save mileage: success");
         else
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     private_node_handle_.param("mileage_topic", mileage_topic, string("/odom_mileage"));
     private_node_handle_.param("odom_topic", odom_topic, string("/odom"));
     private_node_handle_.param("save_interval", save_interval, 500);
-    n.param("/mileage", total_distance.data, 0.0);
+    n.param("/saved_mileage", total_distance.data, 0.0);
 
     client = n.serviceClient<strands_datacentre::SetParam>("/config_manager/save_param");
 
