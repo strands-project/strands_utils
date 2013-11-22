@@ -52,6 +52,7 @@ You can also send a tweet using the `tweet_test` client like this:
 ```rosrun strands_tweets tweet_test.py 'Whatever you want to say'```
 
 *NEW*
+
 You can tweet using actions too try running:
 
 ```rosrun actionlib axclient.py /strands_tweets```
