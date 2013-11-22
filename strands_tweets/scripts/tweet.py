@@ -22,7 +22,7 @@ class tweetsServer(object):
         self.cancelled = False
         self._action_name = name
         rospy.loginfo("Creating action server.")
-        self._as = actionlib.SimpleActionServer(self._action_name, strands_tweets.msg.SendTweetAction, execute_cb = self.executeCallback, auto_start = True)
+        self._as = actionlib.SimpleActionServer(self._action_name, strands_tweets.msg.SendTweetAction, execute_cb = self.executeCallback, auto_start = False)
         self._as.register_preempt_callback(self.preemptCallback)
         rospy.loginfo(" ...starting")
         self._as.start()
