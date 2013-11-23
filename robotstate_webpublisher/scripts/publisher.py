@@ -13,7 +13,6 @@ import subprocess
 
 def upload_summary_scp(upload_path, server, user, password, jsonfile):
     call = subprocess.call(["sshpass", "-p", password, "scp", jsonfile, "%s@%s:%s"%(user,server,upload_path) ])
-    print ["sshpass", "-p", password, "scp", jsonfile, "%s@%s:%s"%(user,server,upload_path) ]
     if call != 0:
         raise Exception("Failed to upload summary. Bad call to sshpass...scp")
 
@@ -105,7 +104,7 @@ if __name__ == '__main__':
         
     s = Sumariser()
     while not rospy.is_shutdown():
-        rospy.sleep(2)
+        rospy.sleep(time_delay)
         
         json_string = s.create_json_summary()
         print "Written file"
@@ -114,6 +113,5 @@ if __name__ == '__main__':
     
         if server_url !=  "--":
             upload_summary_scp(upload_path,  server,  user,  password,  temp_file)
-            print "Uploaded."
         
     rospy.spin()
