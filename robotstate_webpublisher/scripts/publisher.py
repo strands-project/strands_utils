@@ -113,5 +113,6 @@ if __name__ == '__main__':
     
         if server_url !=  "--":
             upload_summary_scp(upload_path,  server,  user,  password,  temp_file)
+            print "Uploaded"
         
     rospy.spin()
