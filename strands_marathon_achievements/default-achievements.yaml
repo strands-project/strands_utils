@@ -25,7 +25,7 @@ achievements:
   - {val: 1000, achievement: "I've run for one kilometre"}
   - {val: 10000, achievement: "I've now driven ten kilometres. My wheels hurt."}
   - {val: 50000, achievement: "50 kilometres down. How much futher can I go..."}
-  - {val: 38.62, achievement: "I've just completed an actual marathon."}
+  - {val: 42195, achievement: "I've just completed an actual marathon."}
   - {val: 100000, achievement: "I've run for one hundred kilometres. Really."}
   bumper_hits:
   - {val: 1, achievement: "I've been bumped once"}
