@@ -1,0 +1,11 @@
+charging:
+  dockOffsetX: 0.3215100694410872
+  dockOffsetY: -0.06228255414136565
+  dockOffsetZ: 0.03829480976899072
+  ownOffsetX: 0.050668333940000206
+  ownOffsetY: 0.038102906825944735
+  ownOffsetZ: 0.35325712306486545
+  processedimage:
+    compressed: {format: jpeg, jpeg_quality: 80, png_level: 9}
+    compressedDepth: {depth_max: 10.0, depth_quantization: 100.0, png_level: 9}
+    theora: {keyframe_frequency: 64, optimize_for: 1, quality: 31, target_bitrate: 800000}
