@@ -10,6 +10,4 @@
 
   <node name="config_manager" pkg="strands_datacentre" type="config_manager.py" output="screen"/>
 
-  <!-- rosout and diagnostic topic logger -->
-  <node name="diagnostics_logger" pkg="strands_diagnostics" type="logger" output="screen"/>
 </launch>
