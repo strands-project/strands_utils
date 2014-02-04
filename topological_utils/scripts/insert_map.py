@@ -71,6 +71,10 @@ def loadMap(inputfile, dataset_name, map_name) :
     return lnodes        
 
 if __name__ == '__main__':
+    
+    if len(sys.argv) < 4 :
+        print "usage: insert_map input_file.txt dataset_name map_name"
+	sys.exit(2)
     filename=str(sys.argv[1])
     dataset_name=str(sys.argv[2])
     map_name=str(sys.argv[3])
