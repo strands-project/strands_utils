@@ -20,7 +20,7 @@ if __name__ == '__main__':
     nnodes=0
     line = fin.readline()
     wname=("WayPoint%d", nnodes)
-    node=Topo_node("Charging Point",line)
+    node=Topo_node("ChargingPoint",line)
     lnodes=[node]
     line = fin.readline()
     while line:
