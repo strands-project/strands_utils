@@ -13,50 +13,53 @@ class topological_node(object):
         self.name=node_name
         self.pointset=dataset_name
         self.map=map_name
-        #self.expanded=False
-        #self.father='none'
 
     def _insert_waypoint(self, swaypoint):
         self.waypoint=swaypoint.split(',')
-        #self.waypoint = Pose()
-        #self.waypoint.position.x=lwaypoint[0]
-        #self.waypoint.position.y=lwaypoint[1]
-        #self.waypoint.position.z=lwaypoint[2]
-        #self.waypoint.orientation.x=lwaypoint[3]
-        #self.waypoint.orientation.y=lwaypoint[4]
-        #self.waypoint.orientation.z=lwaypoint[5]
-        #self.waypoint.orientation.w=lwaypoint[6]
         
     def _insert_edges(self, edges):
         self.edges=edges
 
+    def _insert_corners(self, corners):
+        self.corners=corners
+
+
 def loadMap(inputfile, dataset_name, map_name) :
+
     print "openning %s" %inputfile 
     fin = open(inputfile, 'r')
     print "Done"
+
     line = fin.readline()
     node=topological_node("Empty", dataset_name, map_name)
     lnodes=[node]
     while line:
-        if line.startswith('node:') :
+        #node line
+        if line.startswith('node:'):
+            #Saving Name of the Node
             line = fin.readline()
             name = line.strip('\t')
             name = name.strip('\n')
             node=topological_node(name, dataset_name, map_name)
+
+            #Saving WayPoint            
             line = fin.readline()
             if line.startswith('\t') :
                 if line.startswith('\twaypoint:') :
+                    #Reading Line with WayPoint
                     line = fin.readline()
                     ways = line.strip('\t')
                     ways = ways.strip('\n')
                     node._insert_waypoint(ways)
+                    
+            #Saving edges
             line = fin.readline()
             if line.startswith('\t') :
                 if line.startswith('\tedges:') :
                     edge = {'node':"empty", 'action':"move_base"}
                     edges=[edge]
                     line = fin.readline()
-                    while line and not(line.startswith('node:')) :
+                    while line and not(line.startswith('\tcorners:')) :
                         info= line.strip('\t')
                         inf = info.split(',',2)
                         edge = {'node':inf[0].strip(), 'action':inf[1].strip()}
@@ -64,22 +67,39 @@ def loadMap(inputfile, dataset_name, map_name) :
                         line = fin.readline()
                     edges.pop(0)
                     node._insert_edges(edges)
+
+            #Saving corners
+            #line = fin.readline()                    
+            if line.startswith('\t') :
+                if line.startswith('\tcorners:') :
+                    corners=[]
+                    line = fin.readline()
+                    while line and not(line.startswith('node:')) :
+                        info= line.strip('\t')
+                        inf = info.split(',',2)
+                        corn = (float(inf[0].strip()), float(inf[1].strip()))
+                        corners.append(corn)
+                        line = fin.readline()
+                    node._insert_corners(corners)
             lnodes.append(node)
     fin.close()
     lnodes.pop(0)
 
-    return lnodes        
+    return lnodes         
+
 
 if __name__ == '__main__':
-    
     if len(sys.argv) < 4 :
         print "usage: insert_map input_file.txt dataset_name map_name"
 	sys.exit(2)
+
     filename=str(sys.argv[1])
     dataset_name=str(sys.argv[2])
     map_name=str(sys.argv[3])
+
     host = rospy.get_param("datacentre_host")
     port = rospy.get_param("datacentre_port")
+
     print "Using datacentre  ",host,":", port
     client = pymongo.MongoClient(host, port)
     db=client.autonomous_patrolling

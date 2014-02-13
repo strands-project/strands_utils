@@ -10,19 +10,28 @@ class Topo_node(object):
     def _insert_edges(self, edges):
         self.edges=edges
 
+    def _insert_corners(self, corners):
+        self.corners=corners
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 3 :
         print "usage: tmap_from_waypoint input_file output_file"
-	sys.exit(2)
+        sys.exit(2)
+        
     filename=str(sys.argv[1])
     outfile=str(sys.argv[2])
+
     fin = open(filename, 'r')
+
+    #Inserting charging point
     nnodes=0
     line = fin.readline()
-    wname=("WayPoint%d", nnodes)
     node=Topo_node("ChargingPoint",line)
     lnodes=[node]
     line = fin.readline()
+
+    #Inserting waypoints
     while line:
         nnodes=nnodes+1
         wname= "WayPoint%d" %nnodes
@@ -30,6 +39,8 @@ if __name__ == '__main__':
         lnodes.append(node)
         line = fin.readline()
     fin.close()
+    
+    #inserting edges
     nnodes=len(lnodes)
     for i in lnodes :
         edge = {'node':"empty", 'action':"move_base"}
@@ -40,6 +51,18 @@ if __name__ == '__main__':
                 edges.append(edge)
                 i._insert_edges(edges)
         i.edges.pop(0)
+
+    #inserting corners
+    for i in lnodes :
+        corners=[(1.38, 0.574), (0.574, 1.38), (-0.574, 1.38), (-1.38, 0.574), (-1.38, -0.574), (-0.574, -1.38), (0.574, -1.38), (1.38, -0.574)]
+        i._insert_corners(corners)
+
+    #Clean the file in case it existed
+    fh = open(outfile, "w")
+    fh.close
+
+    #Write File
+    for i in lnodes :
         fh = open(outfile, "a")
         print "node: \n\t%s" %i.node_name
         s_output = "node: \n\t%s\n" %i.node_name
@@ -53,5 +76,12 @@ if __name__ == '__main__':
         for k in i.edges :
             print "\t\t %s, %s" %(k['node'],k['action'])
             s_output = "\t\t %s, %s\n" %(k['node'],k['action'])
+            fh.write(s_output)
+        print "corners:"
+        s_output = "\tcorners:\n"
+        fh.write(s_output)
+        for k in i.corners :
+            print "\t\t%f,%f" %(k[0],k[1])
+            s_output = "\t\t%f,%f\n" %(k[0],k[1])
             fh.write(s_output)
         fh.close        
