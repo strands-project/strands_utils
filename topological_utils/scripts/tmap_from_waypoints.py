@@ -10,8 +10,8 @@ class Topo_node(object):
     def _insert_edges(self, edges):
         self.edges=edges
 
-    def _insert_corners(self, corners):
-        self.corners=corners
+    def _insert_vertices(self, vertices):
+        self.vertices=vertices
 
 
 if __name__ == '__main__':
@@ -54,8 +54,8 @@ if __name__ == '__main__':
 
     #inserting corners
     for i in lnodes :
-        corners=[(1.38, 0.574), (0.574, 1.38), (-0.574, 1.38), (-1.38, 0.574), (-1.38, -0.574), (-0.574, -1.38), (0.574, -1.38), (1.38, -0.574)]
-        i._insert_corners(corners)
+        vertices=[(1.38, 0.574), (0.574, 1.38), (-0.574, 1.38), (-1.38, 0.574), (-1.38, -0.574), (-0.574, -1.38), (0.574, -1.38), (1.38, -0.574)]
+        i._insert_vertices(vertices)
 
     #Clean the file in case it existed
     fh = open(outfile, "w")
@@ -77,10 +77,10 @@ if __name__ == '__main__':
             print "\t\t %s, %s" %(k['node'],k['action'])
             s_output = "\t\t %s, %s\n" %(k['node'],k['action'])
             fh.write(s_output)
-        print "corners:"
-        s_output = "\tcorners:\n"
+        print "\tvertices:"
+        s_output = "\tvertices:\n"
         fh.write(s_output)
-        for k in i.corners :
+        for k in i.vertices :
             print "\t\t%f,%f" %(k[0],k[1])
             s_output = "\t\t%f,%f\n" %(k[0],k[1])
             fh.write(s_output)

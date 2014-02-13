@@ -20,8 +20,8 @@ class topological_node(object):
     def _insert_edges(self, edges):
         self.edges=edges
 
-    def _insert_corners(self, corners):
-        self.corners=corners
+    def _insert_vertices(self, vertices):
+        self.vertices=vertices
 
 
 def loadMap(inputfile, dataset_name, map_name) :
@@ -59,7 +59,7 @@ def loadMap(inputfile, dataset_name, map_name) :
                     edge = {'node':"empty", 'action':"move_base"}
                     edges=[edge]
                     line = fin.readline()
-                    while line and not(line.startswith('\tcorners:')) :
+                    while line and not(line.startswith('\tvertices:')) :
                         info= line.strip('\t')
                         inf = info.split(',',2)
                         edge = {'node':inf[0].strip(), 'action':inf[1].strip()}
@@ -68,19 +68,19 @@ def loadMap(inputfile, dataset_name, map_name) :
                     edges.pop(0)
                     node._insert_edges(edges)
 
-            #Saving corners
+            #Saving vertices
             #line = fin.readline()                    
             if line.startswith('\t') :
-                if line.startswith('\tcorners:') :
-                    corners=[]
+                if line.startswith('\tvertices:') :
+                    vertices=[]
                     line = fin.readline()
                     while line and not(line.startswith('node:')) :
                         info= line.strip('\t')
                         inf = info.split(',',2)
-                        corn = (float(inf[0].strip()), float(inf[1].strip()))
-                        corners.append(corn)
+                        vertex = (float(inf[0].strip()), float(inf[1].strip()))
+                        vertices.append(vertex)
                         line = fin.readline()
-                    node._insert_corners(corners)
+                    node._insert_vertices(vertices)
             lnodes.append(node)
     fin.close()
     lnodes.pop(0)
