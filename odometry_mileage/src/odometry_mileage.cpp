@@ -4,7 +4,7 @@
 #include <std_msgs/Float64.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Point.h>
-#include <strands_datacentre/SetParam.h>
+#include <ros_datacentre/SetParam.h>
 #include <boost/thread.hpp>
 
 #include <math.h>
@@ -16,7 +16,7 @@ ros::Publisher mileage_pub;
 double total_distance;
 geometry_msgs::Point last_point;
 ros::ServiceClient client;
-strands_datacentre::SetParam srv;
+ros_datacentre::SetParam srv;
 int save_interval;
 bool updated;
 boost::mutex mutex;
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     n.param("/saved_mileage", total_distance, 0.0);
     updateMileage(n);
 
-    client = n.serviceClient<strands_datacentre::SetParam>("/config_manager/save_param");
+    client = n.serviceClient<ros_datacentre::SetParam>("/config_manager/save_param");
 
     //Create a subscriber
     ros::Subscriber odom_sub = n.subscribe(odom_topic.c_str(), 50, &callback);
