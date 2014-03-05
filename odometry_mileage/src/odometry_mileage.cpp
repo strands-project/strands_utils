@@ -9,7 +9,6 @@
 
 #include <math.h>
 
-using namespace std;
 int save;
 
 ros::Publisher mileage_pub;
@@ -90,15 +89,15 @@ int main(int argc, char **argv)
     updated = false;
 
     // Declare variables that can be modified by launch file or command line.
-    string mileage_topic;
-    string odom_topic;
+    std::string mileage_topic;
+    std::string odom_topic;
 
     // Initialize node parameters from launch file or command line.
     // Use a private node handle so that multiple instances of the node can be run simultaneously
     // while using different parameters.
     ros::NodeHandle private_node_handle_("~");
-    private_node_handle_.param("mileage_topic", mileage_topic, string("/odom_mileage"));
-    private_node_handle_.param("odom_topic", odom_topic, string("/odom"));
+    private_node_handle_.param("mileage_topic", mileage_topic, std::string("/odom_mileage"));
+    private_node_handle_.param("odom_topic", odom_topic, std::string("/odom"));
     private_node_handle_.param("save_interval", save_interval, 500);
     n.param("/saved_mileage", total_distance, 0.0);
     updateMileage(n);
