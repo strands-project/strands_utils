@@ -31,6 +31,7 @@ add_service_files(
    FILES
    NavGoals.srv
    WeightedNavGoals.srv
+   ROINavGoals.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
