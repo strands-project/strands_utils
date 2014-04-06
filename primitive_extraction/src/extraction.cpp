@@ -37,7 +37,7 @@ void write_plane_msg(primitive_extraction::Primitive& msg, const Eigen::VectorXd
     msg.params[4] = data(2);
     msg.params[5] = data(3);
     msg.points.resize(points.size());
-    for (int i = 0; i < points.size(); ++i) {
+    for (size_t i = 0; i < points.size(); ++i) {
         msg.points[i].x = points[i](0);
         msg.points[i].y = points[i](1);
         msg.points[i].z = points[i](2);
@@ -100,7 +100,7 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
     msg_array.primitives.resize(extracted.size());
     msg_array.camera_frame = msg->header.frame_id;
     
-    for (int i = 0; i < extracted.size(); ++i) {
+    for (size_t i = 0; i < extracted.size(); ++i) {
         primitive_extraction::Primitive msg;
         Eigen::VectorXd data;
         std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > points;

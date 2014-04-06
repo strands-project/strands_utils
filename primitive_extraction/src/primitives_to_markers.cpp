@@ -11,7 +11,7 @@
 #include <Eigen/Dense>
 
 ros::Publisher pub;
-int previous_n;
+size_t previous_n;
 bool display_plane_box;
 double plane_r;
 double plane_g;
@@ -46,7 +46,7 @@ void write_plane_marker(visualization_msgs::Marker& marker, const primitive_extr
         marker.pose.orientation.w = quat.w();
         marker.scale.x = 0.02;
         marker.points.resize(2*primitive.points.size());
-        for (int i = 0; i < primitive.points.size()-1 ; ++i) {
+        for (size_t i = 0; i < primitive.points.size()-1 ; ++i) {
             marker.points[2*i+2] = primitive.points[i];
             marker.points[2*i+3] = primitive.points[i+1];
         }
@@ -108,7 +108,7 @@ void write_sphere_marker(visualization_msgs::Marker& marker, const primitive_ext
 
 void callback(const primitive_extraction::PrimitiveArray::ConstPtr& msg)
 {
-    int n = msg->primitives.size();
+    size_t n = msg->primitives.size();
     std::string camera_frame = msg->camera_frame;
     visualization_msgs::MarkerArray markers;
     
@@ -119,7 +119,7 @@ void callback(const primitive_extraction::PrimitiveArray::ConstPtr& msg)
         markers.markers.resize(previous_n);
     }
     
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         visualization_msgs::Marker marker;
         marker.header.frame_id = camera_frame;
         marker.header.stamp = ros::Time();
@@ -139,7 +139,7 @@ void callback(const primitive_extraction::PrimitiveArray::ConstPtr& msg)
         markers.markers[i] = marker;
     }
     
-    for (int i = n; i < previous_n; ++i) {
+    for (size_t i = n; i < previous_n; ++i) {
         markers.markers[i].action = visualization_msgs::Marker::DELETE;
         markers.markers[i].header.frame_id = camera_frame;
         markers.markers[i].header.stamp = ros::Time();
