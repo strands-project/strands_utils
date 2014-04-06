@@ -102,7 +102,7 @@ void cylinder_primitive::compute_inliers(std::vector<int>& inliers, const Matrix
         }
     }
 
-    if (inlier_refinement == 1 && temp.size() < min_inliers) {
+    if (inlier_refinement == 1 && int(temp.size()) < min_inliers) {
         return;
     }
 
@@ -231,7 +231,7 @@ double cylinder_primitive::shape_size()
     return r;
 }
 
-double cylinder_primitive::shape_data(VectorXd& data)
+void cylinder_primitive::shape_data(VectorXd& data)
 {
     data.resize(8);
     data.segment<3>(0) = a;

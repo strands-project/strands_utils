@@ -138,7 +138,7 @@ void sphere_primitive::compute_inliers(std::vector<int>& inliers, const MatrixXd
         }
     }
 
-    if (inlier_refinement == 1 && temp.size() < min_inliers) {
+    if (inlier_refinement == 1 && int(temp.size()) < min_inliers) {
         return;
     }
 
@@ -276,7 +276,7 @@ double sphere_primitive::shape_size()
     return r;
 }
 
-double sphere_primitive::shape_data(VectorXd& data)
+void sphere_primitive::shape_data(VectorXd& data)
 {
     data.resize(4);
     data.segment<3>(0) = c;

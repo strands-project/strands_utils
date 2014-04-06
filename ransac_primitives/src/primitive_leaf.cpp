@@ -13,7 +13,7 @@ primitive_leaf::primitive_leaf(const OctreeContainerPointIndices &source) : Octr
 
 bool primitive_leaf::remove_if_equal(int ind)
 {
-    int sz = leafDataTVector_.size();
+    size_t sz = leafDataTVector_.size();
     if (sz == 0) {
         return false;
     }

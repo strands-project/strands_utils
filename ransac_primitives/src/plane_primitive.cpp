@@ -57,19 +57,19 @@ void plane_primitive::find_smallest_enclosing_box(Vector2d& cmin, Matrix2d& axes
     // with one side of the convex hull.
     std::vector<Vector2d, aligned_allocator<Vector2d> > dpts;
     dpts.resize(pts.size());
-    for (int i = 0; i < pts.size(); ++i) {
+    for (size_t i = 0; i < pts.size(); ++i) {
         dpts[i] = Vector2d(double(pts[i].x), double(pts[i].y));
     }
     double areamin = INFINITY;
-    for (int i = 0; i < dpts.size(); ++i) { // all lines, find smallest area
+    for (size_t i = 0; i < dpts.size(); ++i) { // all lines, find smallest area
         Vector2d vec = dpts[(i+1)%int(dpts.size())] - dpts[i];
         Vector2d ovec(-vec(1), vec(0));
         vec.normalize();
         ovec.normalize();
         double widthmin = INFINITY;
         double widthmax = -INFINITY;
-        double heightmax;
-        for (int j = 0; j < dpts.size(); ++j) { // find width and height
+        double heightmax = 0;
+        for (size_t j = 0; j < dpts.size(); ++j) { // find width and height
             double proj = vec.dot(dpts[j] - dpts[i]);
             double oproj = ovec.dot(dpts[j] - dpts[i]);
             if (proj < widthmin) {
@@ -163,8 +163,8 @@ void plane_primitive::compute_shape_size(const MatrixXd& points)
         }
 
         int maxind = 0;
-        int maxval = contours[0].size();
-        for (int i = 1; i < contours.size(); ++i) {
+        size_t maxval = contours[0].size();
+        for (size_t i = 1; i < contours.size(); ++i) {
             if (contours[i].size() > maxval) {
                 maxval = contours[i].size();
                 maxind = i;
@@ -206,7 +206,7 @@ void plane_primitive::compute_shape_size(const MatrixXd& points)
     quat = Quaterniond(R);
 
     convex_hull.resize(hull[0].size());
-    for (int i = 0; i < hull[0].size(); ++i) {
+    for (size_t i = 0; i < hull[0].size(); ++i) {
         Vector2i p2(hull[0][i].x, hull[0][i].y);
         Vector3d p3 = 2.0*connectedness_res*basis*(minpt + p2).cast<double>();
         convex_hull[i] = p3 - (p(3) + p3.dot(p.head<3>()))*p.head<3>();
@@ -330,7 +330,7 @@ double plane_primitive::shape_size()
     return sizes(1);//sizes(0)*sizes(1);
 }
 
-double plane_primitive::shape_data(VectorXd& data)
+void plane_primitive::shape_data(VectorXd& data)
 {
     data.resize(13);
     data.segment<4>(0) = p;

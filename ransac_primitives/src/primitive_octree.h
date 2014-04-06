@@ -19,7 +19,7 @@ protected:
     void find_node_recursive(const pcl::octree::OctreeKey& key_arg,
                              unsigned int depthMask_arg,
                              BranchNode* branch_arg,
-                             pcl::octree::OctreeNode*& result_arg, int depth) const;
+                             pcl::octree::OctreeNode*& result_arg, size_t depth) const;
     void serialize_node_recursive(const BranchNode* branch_arg, std::vector<DataT>* dataVector_arg) const;
     void serialize_inliers(const BranchNode* branch_arg, pcl::octree::OctreeKey& key_arg,
                            unsigned int treeDepth_arg, std::vector<DataT>* dataVector_arg,
@@ -29,7 +29,7 @@ public:
     int size();
     void remove_points(const std::vector<int>& inds);
     void valid_inds(std::vector<int>& inds);
-    void find_points_at_depth(std::vector<DataT>& inds, const PointT& point, int depth);
+    void find_points_at_depth(std::vector<DataT>& inds, const PointT& point, size_t depth);
     void find_potential_inliers(std::vector<DataT>& inds, base_primitive* primitive, double margin);
     void setInputCloud(const PointCloudConstPtr& cloud_arg, const IndicesConstPtr& indices_arg = IndicesConstPtr());
     primitive_octree(double resolution);

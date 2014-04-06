@@ -89,7 +89,7 @@ bool primitive_octree::remove_point(int ind)
     return false;
 }
 
-void primitive_octree::find_points_at_depth(std::vector<DataT>& inds, const PointT& point, int depth)
+void primitive_octree::find_points_at_depth(std::vector<DataT>& inds, const PointT& point, size_t depth)
 {
     if (depth == getTreeDepth()) {
         serialize_node_recursive(root_node_, &inds);
@@ -199,7 +199,7 @@ void primitive_octree::serialize_inliers(const BranchNode* branch_arg, pcl::octr
 void primitive_octree::find_node_recursive(const pcl::octree::OctreeKey& key_arg,
                                            unsigned int depthMask_arg,
                                            BranchNode* branch_arg,
-                                           pcl::octree::OctreeNode*& result_arg, int depth) const
+                                           pcl::octree::OctreeNode*& result_arg, size_t depth) const
 {
     // index to branch child
     unsigned char childIdx;
@@ -215,7 +215,7 @@ void primitive_octree::find_node_recursive(const pcl::octree::OctreeKey& key_arg
             BranchNode* childBranch;
             childBranch = static_cast<BranchNode*> (childNode);
 
-            if (depthMask_arg == 1 << depth) { // 2^depth
+            if (int(depthMask_arg) == 1 << depth) { // 2^depth
                 result_arg = childNode;
             }
             else {

@@ -104,8 +104,8 @@ bool base_primitive::are_contained(const std::vector<int>& other_inds)
         sorted = true;
     }
     // check if the primitives share any inliers
-    int counter1 = 0;
-    int counter2 = 0;
+    size_t counter1 = 0;
+    size_t counter2 = 0;
     while (counter1 < supporting_inds.size() && counter2 < other_inds.size()) {
         if (supporting_inds[counter1] == other_inds[counter2]) {
             return true;
@@ -245,7 +245,7 @@ double base_primitive::current_connectedness_res()
 // write the inliers to a file or screen
 void base_primitive::write_indices_to_stream(std::ostream& o)
 {
-    for (int i = 0; i < supporting_inds.size(); ++i) {
-        o << supporting_inds[i] << " ";
+    for (const int& ind : supporting_inds) {
+        o << ind << " ";
     }
 }

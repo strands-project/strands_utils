@@ -45,7 +45,7 @@ primitive_extractor::primitive_extractor(pcl::PointCloud<pcl::PointXYZRGB>::Ptr 
     mpoints.resize(3, cloud->size());
     mnormals.resize(3, cloud->size());
 
-    for (int i = 0; i < cloud->size(); ++i) {
+    for (size_t i = 0; i < cloud->size(); ++i) {
         //cloud->points[i].r = 255;
         mpoints.col(i) = cloud->points[i].getVector3fMap().cast<double>();
         mnormals.col(i) = cloud_normals->points[i].getNormalVector3fMap().cast<double>();
@@ -59,7 +59,7 @@ void primitive_extractor::construct_octrees()
     // randomize, setup the disjoint point sets
     std::vector<int> inds;
     inds.resize(cloud->size());
-    for (int i = 0; i < cloud->size(); ++i) {
+    for (size_t i = 0; i < cloud->size(); ++i) {
         inds[i] = i;
     }
     std::random_shuffle(inds.begin(), inds.end());
@@ -284,7 +284,7 @@ void primitive_extractor::extract(std::vector<base_primitive*>& extracted)
 base_primitive* primitive_extractor::max_inliers(double& maxmean, double& maxa, double& maxb,
                                                  std::vector<base_primitive*>& primitives)
 {
-    base_primitive* best_candidate;
+    base_primitive* best_candidate = NULL;
     maxmean = -INFINITY;
     double mean, a, b;
     for (base_primitive* p : primitives) {
@@ -448,7 +448,7 @@ void primitive_extractor::primitive_inlier_points(MatrixXd& points, base_primiti
 {
     unsigned sz = p->supporting_inds.size();
     points.resize(3, sz);
-    for (int i = 0; i < sz; ++i) {
+    for (size_t i = 0; i < sz; ++i) {
         points.col(i) = mpoints.col(p->supporting_inds[i]);
     }
 }
