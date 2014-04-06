@@ -156,9 +156,9 @@ int main(int argc, char** argv)
     pn.param<bool>("extract_cylinders", extract_cylinders, true);
     pn.param<bool>("extract_spheres", extract_spheres, true);
     std::string input;
-    pn.param<std::string>("input", input, std::string("/head_xtion/depth_registered/points"));
+    pn.param<std::string>("input", input, std::string("/primitive_extraction/input"));
     std::string output;
-    pn.param<std::string>("output", output, std::string("/primitives"));
+    pn.param<std::string>("output", output, std::string("/primitive_extraction/primitives"));
     
     if (extract_planes) {
         primitives.push_back(new plane_primitive());

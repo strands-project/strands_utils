@@ -161,9 +161,9 @@ int main(int argc, char** argv)
     // while using different parameters.
 	ros::NodeHandle pn("~");
 	std::string input;
-	pn.param<std::string>("input", input, std::string("/primitives"));
+	pn.param<std::string>("input", input, std::string("/primitive_extraction/primitives"));
 	std::string output;
-	pn.param<std::string>("output", output, std::string("/primitive_marker_array"));
+	pn.param<std::string>("output", output, std::string("/primitive_extraction/primitive_marker_array"));
 	pn.param<bool>("display_plane_box", display_plane_box, false);
 	pn.param<double>("plane_r", plane_r, 1.0);
 	pn.param<double>("plane_g", plane_g, 0.0);
