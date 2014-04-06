@@ -93,8 +93,6 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
     primitive_extractor extractor(cloud, primitives, params, NULL);
     std::vector<base_primitive*> extracted;
     extractor.extract(extracted);
-
-    std::cout << "The algorithm has finished..." << std::endl;
     
     primitive_extraction::PrimitiveArray msg_array;
     msg_array.primitives.resize(extracted.size());
@@ -126,20 +124,11 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "extraction");
+	ros::NodeHandle n;
+	
     // Initialize node parameters from launch file or command line.
     // Use a private node handle so that multiple instances of the node can be run simultaneously
     // while using different parameters.
-	ros::NodeHandle n;
-	
-	/*params.octree_res = 0.04;
-    params.normal_neigbourhood = 0.015;
-    params.inlier_threshold = 0.015;
-    params.angle_threshold = 0.4;
-    params.add_threshold = 0.01;
-    params.min_shape = 3000;
-    params.inlier_min = params.min_shape;
-    params.connectedness_res = 0.01;
-    params.distance_threshold = 2.0;*/
     ros::NodeHandle pn("~");
     pn.param<int>("number_disjoint_subsets", params.number_disjoint_subsets, 20);
     pn.param<double>("octree_leaf_size", params.octree_res, 0.5);

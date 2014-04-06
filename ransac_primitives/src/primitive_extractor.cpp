@@ -35,12 +35,16 @@ primitive_extractor::primitive_extractor(pcl::PointCloud<pcl::PointXYZRGB>::Ptr 
     level_scores.setZero();
     construct_octrees();
 
-    std::cout << "Octree constructed, tree depth: " << tree_depth << std::endl;
+    if (PRINTOUTS) {
+        std::cout << "Octree constructed, tree depth: " << tree_depth << std::endl;
+    }
 
     // estimate normals for all points
     estimate_normals();
 
-    std::cout << "Normals extracted..." << std::endl;
+    if (PRINTOUTS) {
+        std::cout << "Normals extracted..." << std::endl;
+    }
 
     mpoints.resize(3, cloud->size());
     mnormals.resize(3, cloud->size());
@@ -141,7 +145,6 @@ void primitive_extractor::extract(std::vector<base_primitive*>& extracted)
             min_set = p->points_required();
         }
     }
-    std::cout << "Minimum required: " << min_set << std::endl;
 
     int n = cloud->size();
     double candidates_evaluated = 0.0;
