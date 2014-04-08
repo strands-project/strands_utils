@@ -24,9 +24,9 @@
 	    <!-- The probability of extracting a primitive which is not the largest -->
 	    <param name="error_add_probability" type="double" value="0.01"/>
 	    <!-- Do not consider any shapes with fewer inliers than this -->
-	    <param name="min_inliers" type="int" value="3000"/>
+	    <param name="min_inliers" type="int" value="6000"/>
 	    <!-- Terminate when no shapes larger than this are left -->
-	    <param name="min_terminate" type="int" value="3000"/>
+	    <param name="min_terminate" type="int" value="6000"/>
 	    <!-- Discretization of connectedness on primitive surfaces -->
 	    <!-- Used to extract the largest connected region -->
 	    <param name="connectedness_dist" type="double" value="0.03"/>
