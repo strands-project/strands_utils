@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <opencv2/highgui/highgui.hpp> // DEBUG
-#include "primitive_octree.h"
+//#include "primitive_octree.h"
 
 using namespace Eigen;
 
@@ -21,56 +21,6 @@ void base_primitive::inliers_estimate(double& mean, double& a, double& b, int se
     double dev = 1.0/N*sqrt(x*n*(N-x)*(N+n)/(N-1));
     a = mean + dev;
     b = mean - dev;
-}
-
-// compute the number of inliers on the whole point cloud
-void base_primitive::final_inliers(primitive_octree& octree, MatrixXd& points, MatrixXd& normals,
-                                   double inlier_threshold, double angle_threshold)
-{
-    if (inlier_refinement == number_disjoint_subsets) {
-        return;
-    }
-    inlier_refinement = number_disjoint_subsets;
-    std::vector<int> inds;
-    octree.find_potential_inliers(inds, this, 0.01);
-    conforming_inds.clear();
-    compute_inliers(conforming_inds, points, normals, inds, inlier_threshold, angle_threshold);
-    supporting_inds.clear();
-    std::vector<int> temp;
-    largest_connected_component(temp, points);
-    supporting_inds.swap(temp);
-    std::sort(supporting_inds.begin(), supporting_inds.end());
-    sorted = true;
-}
-
-void base_primitive::refine_inliers(std::vector<primitive_octree>& octrees, MatrixXd& points,
-                                    MatrixXd& normals, double inlier_threshold, double angle_threshold)
-{
-    if (inlier_refinement == number_disjoint_subsets) {
-        return;
-    }
-    ++inlier_refinement; // check if larger than disjoint sets?
-    std::vector<int> inds;
-    int n = inlier_refinement - 1;
-    octrees[n].find_potential_inliers(inds, this, 0.01);
-    std::vector<int> inliers;
-    compute_inliers(inliers, points, normals, inds, inlier_threshold, angle_threshold);
-    /*if (inlier_refinement == 1 && inliers.size() < 10) {
-        return;
-    }*/
-    conforming_inds.insert(conforming_inds.end(), inliers.begin(), inliers.end());
-    /*if (conforming_inds.size() < min_inliers) {
-
-    }*/
-    if (inlier_refinement == 1) {
-        supporting_inds = conforming_inds;
-    }
-    else {
-        inliers.clear();
-        largest_connected_component(inliers, points);
-        supporting_inds.swap(inliers);
-    }
-    sorted = false;
 }
 
 // we need the inliers to be sorted when finding mutual inliers between

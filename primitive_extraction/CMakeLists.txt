@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(primitive_extraction)
 
+set(CMAKE_CXX_FLAGS "-O4 -Wall -fPIC -std=c++0x")
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages

@@ -2,7 +2,6 @@
 
 #include <iomanip>
 #include <time.h>
-//#include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/passthrough.h>
 
@@ -10,10 +9,11 @@
 
 using namespace Eigen;
 
-primitive_extractor::primitive_extractor(pcl::PointCloud<pcl::PointXYZRGB>::Ptr new_cloud,
-                                         std::vector<base_primitive*>& primitives,
-                                         primitive_params params, primitive_visualizer* vis) :
-    cloud(new pcl::PointCloud<pcl::PointXYZRGB>()), cloud_normals(new pcl::PointCloud<pcl::Normal>),
+template <typename Point>
+primitive_extractor<Point>::primitive_extractor(cloud_ptr new_cloud,
+                                                std::vector<base_primitive*>& primitives,
+                                                primitive_params params, primitive_visualizer<point_type> *vis) :
+    cloud(new cloud_type()), cloud_normals(new pcl::PointCloud<pcl::Normal>),
     octree(params.octree_res), primitives(primitives), params(params), vis(vis)
 {
     // setup parameters
@@ -49,16 +49,18 @@ primitive_extractor::primitive_extractor(pcl::PointCloud<pcl::PointXYZRGB>::Ptr 
     mpoints.resize(3, cloud->size());
     mnormals.resize(3, cloud->size());
 
+    Vector3f point;
     for (size_t i = 0; i < cloud->size(); ++i) {
-        //cloud->points[i].r = 255;
-        mpoints.col(i) = cloud->points[i].getVector3fMap().cast<double>();
+        point = cloud->points[i].getVector3fMap();
+        mpoints.col(i) = point.cast<double>();
         mnormals.col(i) = cloud_normals->points[i].getNormalVector3fMap().cast<double>();
         mnormals.col(i).normalize();
     }
 }
 
 // setup the disjoint subsets
-void primitive_extractor::construct_octrees()
+template <typename Point>
+void primitive_extractor<Point>::construct_octrees()
 {
     // randomize, setup the disjoint point sets
     std::vector<int> inds;
@@ -68,7 +70,7 @@ void primitive_extractor::construct_octrees()
     }
     std::random_shuffle(inds.begin(), inds.end());
 
-    octrees.resize(params.number_disjoint_subsets, primitive_octree(params.octree_res)); // could probably just pass an int?
+    octrees.resize(params.number_disjoint_subsets, octree_type(params.octree_res)); // could probably just pass an int?
     total_set_size.resize(params.number_disjoint_subsets);
     int sum = 0;
 
@@ -80,7 +82,7 @@ void primitive_extractor::construct_octrees()
         if (i == params.number_disjoint_subsets - 1) {
             end = inds.end();
         }
-        octrees[i].setInputCloud(cloud, primitive_octree::IndicesConstPtr(new std::vector<int>(start, end)));
+        octrees[i].setInputCloud(cloud, typename octree_type::IndicesConstPtr(new std::vector<int>(start, end)));
         octrees[i].addPointsFromInputCloud();
         sum += octrees[i].size();
         total_set_size[i] = sum;
@@ -88,22 +90,25 @@ void primitive_extractor::construct_octrees()
 }
 
 // for displaying the normals during the extraction
-pcl::PointCloud<pcl::Normal>::ConstPtr primitive_extractor::get_normals()
+template <typename Point>
+pcl::PointCloud<pcl::Normal>::ConstPtr primitive_extractor<Point>::get_normals()
 {
     return cloud_normals;
 }
 
 // for displaying the cloud during the extraction
-pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr primitive_extractor::get_cloud()
+template <typename Point>
+typename primitive_extractor<Point>::cloud_const_ptr primitive_extractor<Point>::get_cloud()
 {
     return cloud;
 }
 
 // TODO: re-write this for cameras that are not in (0, 0, 0)
-void primitive_extractor::remove_distant_points(pcl::PointCloud<pcl::PointXYZRGB>::Ptr new_cloud, double dist)
+template <typename Point>
+void primitive_extractor<Point>::remove_distant_points(cloud_ptr new_cloud, double dist)
 {
     // filter out points that are far from the camera and thus will contain too much noise
-    pcl::PassThrough<pcl::PointXYZRGB> pass;
+    pcl::PassThrough<point_type> pass;
     pass.setInputCloud(new_cloud);
     pass.setFilterFieldName("z");
     pass.setFilterLimits(0.0, dist);
@@ -111,15 +116,18 @@ void primitive_extractor::remove_distant_points(pcl::PointCloud<pcl::PointXYZRGB
 }
 
 // standard PCL normal extraction
-void primitive_extractor::estimate_normals()
+template <typename Point>
+void primitive_extractor<Point>::estimate_normals()
 {
     // Create the normal estimation class, and pass the input dataset to it
-    pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
+    pcl::NormalEstimationOMP<point_type, pcl::Normal> ne;
     ne.setInputCloud(cloud);
 
     // Create an empty kdtree representation, and pass it to the normal estimation object.
     // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
-    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
+    typedef pcl::search::KdTree<point_type> kd_tree_type;
+    typedef typename kd_tree_type::Ptr kd_tree_type_ptr;
+    kd_tree_type_ptr tree(new kd_tree_type());
     //pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB>::Ptr ptr(octree);
     ne.setSearchMethod(tree);
 
@@ -133,7 +141,8 @@ void primitive_extractor::estimate_normals()
 }
 
 // main function, extracts the primitives
-void primitive_extractor::extract(std::vector<base_primitive*>& extracted)
+template <typename Point>
+void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted)
 {
     number_extracted = 0; // set numbers extracted to zero again
     extracted.clear(); // extracted primitives
@@ -284,7 +293,8 @@ void primitive_extractor::extract(std::vector<base_primitive*>& extracted)
 }
 
 // finds the primitive with the highest expected inliers
-base_primitive* primitive_extractor::max_inliers(double& maxmean, double& maxa, double& maxb,
+template <typename Point>
+base_primitive* primitive_extractor<Point>::max_inliers(double& maxmean, double& maxa, double& maxb,
                                                  std::vector<base_primitive*>& primitives)
 {
     base_primitive* best_candidate = NULL;
@@ -303,7 +313,8 @@ base_primitive* primitive_extractor::max_inliers(double& maxmean, double& maxa, 
 }
 
 // finds all prmimitives with inlier confidence interval overlapping the estimate of best_candidate
-void primitive_extractor::overlapping_estimates(std::vector<base_primitive*>& primitives, base_primitive* best_candidate)
+template <typename Point>
+void primitive_extractor<Point>::overlapping_estimates(std::vector<base_primitive*>& primitives, base_primitive* best_candidate)
 {
     double maxmean, maxa, maxb;
     best_candidate->inliers_estimate(maxmean, maxa, maxb, octree.size(), total_set_size);
@@ -324,7 +335,8 @@ void primitive_extractor::overlapping_estimates(std::vector<base_primitive*>& pr
     primitives.swap(temp);
 }
 
-double primitive_extractor::refine_inliers(std::vector<base_primitive*>& primitives)
+template <typename Point>
+double primitive_extractor<Point>::refine_inliers(std::vector<base_primitive*>& primitives)
 {
     // find the candidate with the most expected inliers
     double maxmean, maxa, maxb;
@@ -348,7 +360,8 @@ double primitive_extractor::refine_inliers(std::vector<base_primitive*>& primiti
 }
 
 // remove all primitives from vector
-void primitive_extractor::clear_primitives(std::vector<base_primitive*>& ps)
+template <typename Point>
+void primitive_extractor<Point>::clear_primitives(std::vector<base_primitive*>& ps)
 {
     for (base_primitive* p : ps) {
         delete p;
@@ -357,7 +370,8 @@ void primitive_extractor::clear_primitives(std::vector<base_primitive*>& ps)
 }
 
 // new primitive added to extracted, perform necessary operations on octrees etc.
-void primitive_extractor::add_new_primitive(base_primitive* primitive)
+template <typename Point>
+void primitive_extractor<Point>::add_new_primitive(base_primitive* primitive)
 {
     if (vis != NULL) {
         vis->lock();
@@ -368,7 +382,8 @@ void primitive_extractor::add_new_primitive(base_primitive* primitive)
 }
 
 // remove contained points from the octrees
-void primitive_extractor::remove_points_from_cloud(base_primitive* p)
+template <typename Point>
+void primitive_extractor<Point>::remove_points_from_cloud(base_primitive* p)
 {
     // remove points and compute the new total_set_size,
     // the cumulative sum of number of points in octrees,
@@ -386,6 +401,25 @@ void primitive_extractor::remove_points_from_cloud(base_primitive* p)
         vis->lock();
     }
 
+    color_primitive(p);
+
+    if (vis != NULL) {
+        vis->cloud_changed = true;
+        vis->unlock();
+    }
+}
+
+// don't do anything if the points don't have color
+template <typename Point>
+void primitive_extractor<Point>::color_primitive(base_primitive* p)
+{
+
+}
+
+// put color on the points
+template <>
+void primitive_extractor<pcl::PointXYZRGB>::color_primitive(base_primitive* p)
+{
     int colormap[6][3] = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}, {255, 0, 255}, {255, 255, 0}, {64, 224, 208}};
     int r = number_extracted % 6;
     p->red = colormap[r][0];
@@ -398,15 +432,11 @@ void primitive_extractor::remove_points_from_cloud(base_primitive* p)
         cloud->points[i].g = p->green;
         cloud->points[i].b = p->blue;
     }
-
-    if (vis != NULL) {
-        vis->cloud_changed = true;
-        vis->unlock();
-    }
 }
 
 // sample an octree level from the learnt distribution
-int primitive_extractor::sample_level(int iteration)
+template <typename Point>
+int primitive_extractor<Point>::sample_level(int iteration)
 {
     if (iteration < 200) {
         return rand() % tree_depth;
@@ -432,22 +462,25 @@ int primitive_extractor::sample_level(int iteration)
 }
 
 // get all points from a node containing x at a certain level of the octree
-void primitive_extractor::get_points_at_level(std::vector<int>& inds, point& p, int level)
+template <typename Point>
+void primitive_extractor<Point>::get_points_at_level(std::vector<int>& inds, point_type& p, int level)
 {
     octree.find_points_at_depth(inds, p, level);
 }
 
 // compute the probability of not having found a shape with candidate_size points
-double primitive_extractor::prob_candidate_not_found(double candidate_size,
-                                                     double candidates_evaluated,
-                                                     int points_required)
+template <typename Point>
+double primitive_extractor<Point>::prob_candidate_not_found(double candidate_size,
+                                                            double candidates_evaluated,
+                                                            int points_required)
 {
     double intpart = octree.size()*tree_depth*(1 << points_required);
     return pow(1.0f - candidate_size/intpart, candidates_evaluated);
 }
 
 // get back the inlier points of an extracted primitive p
-void primitive_extractor::primitive_inlier_points(MatrixXd& points, base_primitive* p)
+template <typename Point>
+void primitive_extractor<Point>::primitive_inlier_points(MatrixXd& points, base_primitive* p)
 {
     unsigned sz = p->supporting_inds.size();
     points.resize(3, sz);

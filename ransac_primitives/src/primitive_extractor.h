@@ -9,37 +9,43 @@
 #include "base_primitive.h"
 #include "primitive_visualizer.h"
 
+template <typename Point>
 class primitive_extractor {
 public:
-    typedef pcl::PointXYZRGB point;
+    typedef Point point_type;
+    typedef pcl::PointCloud<point_type> cloud_type;
+    typedef typename cloud_type::Ptr cloud_ptr;
+    typedef typename cloud_type::ConstPtr cloud_const_ptr;
+    typedef primitive_octree<point_type> octree_type;
 private:
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud; // pcl formats
+    cloud_ptr cloud; // pcl formats
     pcl::PointCloud<pcl::Normal>::Ptr cloud_normals;
     Eigen::MatrixXd mpoints; // points of cloud
     Eigen::MatrixXd mnormals; // normals of point cloud
-    primitive_octree octree; // octree used for the entire cloud
+    octree_type octree; // octree used for the entire cloud
     int tree_depth; // the levels of the octree
     Eigen::ArrayXi level_scores; // the sum of the number of primitives at each level of the octree
     //Eigen::VectorXd level_pdf;
     std::vector<base_primitive*> candidates; // candidates for new primitives
     int number_extracted; // number of primitives extracted, used for colors
-    std::vector<primitive_octree> octrees; // the disjoint subsets as octrees
+    std::vector<octree_type> octrees; // the disjoint subsets as octrees
     std::vector<int> total_set_size; // the cumulative sum of number of points in the octrees
 
     std::vector<base_primitive*>& primitives; // primitive types used
 
     primitive_params params; // the parameters of the algorithm, from primitive_params.h
 
-    primitive_visualizer* vis; // tool for visualizing the progression
+    primitive_visualizer<point_type>* vis; // tool for visualizing the progression
 
-    void remove_distant_points(pcl::PointCloud<pcl::PointXYZRGB>::Ptr new_cloud, double dist);
+    void remove_distant_points(cloud_ptr new_cloud, double dist);
     void estimate_normals();
     int sample_level(int iteration);
-    void get_points_at_level(std::vector<int>& inds, point& p, int level);
+    void get_points_at_level(std::vector<int>& inds, point_type& p, int level);
     double prob_candidate_not_found(double candidate_size,
                                     double candidates_evaluated,
                                     int points_required);
     void remove_points_from_cloud(base_primitive* p);
+    void color_primitive(base_primitive* p);
     void add_new_primitive(base_primitive* primitive);
     void clear_primitives(std::vector<base_primitive *>& ps);
     void construct_octrees();
@@ -51,11 +57,12 @@ public:
     void primitive_inlier_points(Eigen::MatrixXd& points, base_primitive* p);
     void extract(std::vector<base_primitive*>& extracted);
     pcl::PointCloud<pcl::Normal>::ConstPtr get_normals();
-    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr get_cloud();
-    primitive_extractor(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+    cloud_const_ptr get_cloud();
+    primitive_extractor(cloud_ptr cloud,
                         std::vector<base_primitive*>& primitives,
                         primitive_params params = primitive_params(),
-                        primitive_visualizer* vis = NULL);
+                        primitive_visualizer<point_type>* vis = NULL);
 };
 
+#include "primitive_extractor.hpp"
 #endif // PRIMITIVE_EXTRACTOR_H

@@ -1,34 +1,39 @@
 #include "primitive_octree.h"
 
-primitive_octree::primitive_octree(double resolution) :
-    pcl::octree::OctreePointCloudSearch<pcl::PointXYZRGB, primitive_leaf>(resolution)
+template <typename Point>
+primitive_octree<Point>::primitive_octree(double resolution) :
+    pcl::octree::OctreePointCloudSearch<point_type, primitive_leaf>(resolution)
 {
 
 }
 
-void primitive_octree::setInputCloud(const PointCloudConstPtr &cloud_arg, const IndicesConstPtr& indices_arg)
+template <typename Point>
+void primitive_octree<Point>::setInputCloud(const PointCloudConstPtr &cloud_arg, const IndicesConstPtr& indices_arg)
 {
     //std::sort(indices_arg->begin(), indices_arg->end());
     super::setInputCloud(cloud_arg, indices_arg);
     if (!indices_arg) {
-        points_left = input_->size();
+        points_left = super::input_->size();
     }
     else {
-        points_left = indices_->size();
+        points_left = super::indices_->size();
     }
 }
 
-primitive_octree::~primitive_octree()
+template <typename Point>
+primitive_octree<Point>::~primitive_octree()
 {
 
 }
 
-int primitive_octree::size()
+template <typename Point>
+int primitive_octree<Point>::size()
 {
     return points_left;
 }
 
-void primitive_octree::remove_points(const std::vector<int>& inds)
+template <typename Point>
+void primitive_octree<Point>::remove_points(const std::vector<int>& inds)
 {
     /*std::sort(inds.begin(), inds.end());
     std::vector<int> remove_inds;
@@ -58,16 +63,17 @@ void primitive_octree::remove_points(const std::vector<int>& inds)
     }
 }
 
-bool primitive_octree::remove_point(int ind)
+template <typename Point>
+bool primitive_octree<Point>::remove_point(int ind)
 {
     pcl::octree::OctreeKey key;
-    PointT point = input_->points[ind];
+    point_type point = super::input_->points[ind];
 
     // generate key for point
-    this->genOctreeKeyforPoint(point, key);
+    super::genOctreeKeyforPoint(point, key);
 
     pcl::octree::OctreeNode* result = NULL;
-    find_node_recursive(key, depth_mask_, root_node_, result, 0);
+    find_node_recursive(key, super::depth_mask_, super::root_node_, result, 0);
     if (result == NULL) {
         return false;
     }
@@ -89,20 +95,21 @@ bool primitive_octree::remove_point(int ind)
     return false;
 }
 
-void primitive_octree::find_points_at_depth(std::vector<DataT>& inds, const PointT& point, size_t depth)
+template <typename Point>
+void primitive_octree<Point>::find_points_at_depth(std::vector<DataT>& inds, const point_type& point, size_t depth)
 {
-    if (depth == getTreeDepth()) {
-        serialize_node_recursive(root_node_, &inds);
+    if (depth == super::getTreeDepth()) {
+        serialize_node_recursive(this->root_node_, &inds);
         return;
     }
 
     pcl::octree::OctreeKey key;
 
     // generate key for point
-    this->genOctreeKeyforPoint(point, key);
+    super::genOctreeKeyforPoint(point, key);
 
     pcl::octree::OctreeNode* result = 0;
-    find_node_recursive(key, depth_mask_, root_node_, result, depth);
+    find_node_recursive(key, super::depth_mask_, super::root_node_, result, depth);
 
     if (result == NULL) {
         std::cout << "Is null!" << std::endl;
@@ -112,7 +119,7 @@ void primitive_octree::find_points_at_depth(std::vector<DataT>& inds, const Poin
         serialize_node_recursive(static_cast<const BranchNode*>(result), &inds);
     }
     else if (result->getNodeType() == pcl::octree::LEAF_NODE) {
-        const LeafNode* childLeaf = static_cast<const LeafNode*>(result);
+        const primitive_leaf_node* childLeaf = static_cast<const primitive_leaf_node*>(result);
         //childLeaf->getData(inds);
         childLeaf->getContainer().getPointIndices(inds);
     }
@@ -123,16 +130,18 @@ void primitive_octree::find_points_at_depth(std::vector<DataT>& inds, const Poin
 
 }
 
-void primitive_octree::find_potential_inliers(std::vector<DataT>& inds, base_primitive* primitive, double margin)
+template <typename Point>
+void primitive_octree<Point>::find_potential_inliers(std::vector<DataT>& inds, base_primitive* primitive, double margin)
 {
     pcl::octree::OctreeKey newKey;
     unsigned int treeDepth_arg = 0;
-    serialize_inliers(root_node_, newKey, treeDepth_arg, &inds, primitive, margin);
+    serialize_inliers(super::root_node_, newKey, treeDepth_arg, &inds, primitive, margin);
 }
 
-void primitive_octree::serialize_inliers(const BranchNode* branch_arg, pcl::octree::OctreeKey& key_arg,
-                                         unsigned int treeDepth_arg, std::vector<DataT>* dataVector_arg,
-                                         base_primitive* primitive, double margin) const
+template <typename Point>
+void primitive_octree<Point>::serialize_inliers(const BranchNode* branch_arg, pcl::octree::OctreeKey& key_arg,
+                                                unsigned int treeDepth_arg, std::vector<DataT>* dataVector_arg,
+                                                base_primitive* primitive, double margin) const
 {
     // child iterator
     unsigned char childIdx;
@@ -154,7 +163,7 @@ void primitive_octree::serialize_inliers(const BranchNode* branch_arg, pcl::octr
             // add current branch voxel to key
             key_arg.pushBranch(childIdx);
 
-            genVoxelBoundsFromOctreeKey(key_arg, treeDepth_arg, min_pt, max_pt);
+            super::genVoxelBoundsFromOctreeKey(key_arg, treeDepth_arg, min_pt, max_pt);
             l = double(max_pt(0) - min_pt(0));
             mid = 0.5*(min_pt + max_pt).cast<double>();
             //std::cout << "Diff: " << (max_pt - min_pt).transpose() << std::endl;
@@ -177,7 +186,7 @@ void primitive_octree::serialize_inliers(const BranchNode* branch_arg, pcl::octr
             }
             case pcl::octree::LEAF_NODE:
             {
-                const LeafNode* childLeaf = static_cast<const LeafNode*>(childNode);
+                const primitive_leaf_node* childLeaf = static_cast<const primitive_leaf_node*>(childNode);
 
                 if (dataVector_arg) {
                     //childLeaf->getData (*dataVector_arg);
@@ -196,10 +205,11 @@ void primitive_octree::serialize_inliers(const BranchNode* branch_arg, pcl::octr
     }
 }
 
-void primitive_octree::find_node_recursive(const pcl::octree::OctreeKey& key_arg,
-                                           unsigned int depthMask_arg,
-                                           BranchNode* branch_arg,
-                                           pcl::octree::OctreeNode*& result_arg, size_t depth) const
+template <typename Point>
+void primitive_octree<Point>::find_node_recursive(const pcl::octree::OctreeKey& key_arg,
+                                                  unsigned int depthMask_arg,
+                                                  BranchNode* branch_arg,
+                                                  pcl::octree::OctreeNode*& result_arg, size_t depth) const
 {
     // index to branch child
     unsigned char childIdx;
@@ -232,7 +242,8 @@ void primitive_octree::find_node_recursive(const pcl::octree::OctreeKey& key_arg
 
 }
 
-void primitive_octree::serialize_node_recursive(const BranchNode* branch_arg, std::vector<DataT>* dataVector_arg) const
+template <typename Point>
+void primitive_octree<Point>::serialize_node_recursive(const BranchNode* branch_arg, std::vector<DataT>* dataVector_arg) const
 {
 
     // child iterator
@@ -260,7 +271,7 @@ void primitive_octree::serialize_node_recursive(const BranchNode* branch_arg, st
             }
             case pcl::octree::LEAF_NODE:
             {
-                const LeafNode* childLeaf = static_cast<const LeafNode*>(childNode);
+                const primitive_leaf_node* childLeaf = static_cast<const primitive_leaf_node*>(childNode);
 
                 if (dataVector_arg) {
                     //childLeaf->getData (*dataVector_arg);
