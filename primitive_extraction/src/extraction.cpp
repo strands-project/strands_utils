@@ -6,7 +6,6 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_ros/point_cloud.h>
 
-//#include "primitive_extractor.h"
 #include "primitive_core.h"
 #include "plane_primitive.h"
 #include "sphere_primitive.h"
@@ -94,11 +93,13 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
     pcl::fromROSMsg(*msg, *msg_cloud);
     
+    ROS_INFO("Got a point cloud of size %lu", msg_cloud->size());
     // Create the filtering object
     pcl::VoxelGrid<pcl::PointXYZ> sor;
     sor.setInputCloud(msg_cloud);
     sor.setLeafSize(subsampling_voxel_size, subsampling_voxel_size, subsampling_voxel_size);
     sor.filter(*cloud);
+    ROS_INFO("Downsampled to %lu", cloud->size());
 
     ros::Time begin = ros::Time::now();
     primitive_extractor<pcl::PointXYZ> extractor(cloud, primitives, params, NULL);

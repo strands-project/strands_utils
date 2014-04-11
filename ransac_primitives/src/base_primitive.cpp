@@ -23,6 +23,16 @@ void base_primitive::inliers_estimate(double& mean, double& a, double& b, int se
     b = mean - dev;
 }
 
+// compute the estimate of the number of inliers on the whole point cloud
+double base_primitive::inliers_mean_estimate(int set_size, std::vector<int>& total_set_size)
+{
+    double N = -2.0 - double(total_set_size[inlier_refinement-1]);
+    double x = -2.0 - double(set_size);
+    double n = -1.0 - double(supporting_inds.size());
+    return (-1.0 - x*n/N);
+}
+
+
 // we need the inliers to be sorted when finding mutual inliers between
 // primitives via are_contained
 std::vector<int>& base_primitive::sorted_inliers()

@@ -39,6 +39,7 @@ public:
     virtual void largest_connected_component(std::vector<int>& inliers, const Eigen::MatrixXd& points) = 0;
     std::vector<int>& sorted_inliers();
     void inliers_estimate(double& mean, double& a, double& b, int set_size, std::vector<int>& total_set_size);
+    double inliers_mean_estimate(int set_size, std::vector<int>& total_set_size);
     // check for primitives, takes all points and normals considered and the indices that are still unoccupied by primitives
     virtual void compute_inliers(std::vector<int>& inliers, const Eigen::MatrixXd& points, const Eigen::MatrixXd& normals,
                                  const std::vector<int>& inds, double inlier_threshold, double angle_threshold) = 0;

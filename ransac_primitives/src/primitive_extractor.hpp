@@ -256,7 +256,7 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
                 }
                 else if (p->are_contained(best_candidate->sorted_inliers())) {
                     // remove candidate
-                    candidates_evaluated *= pow(1 - double(p->get_inliers())/double(octree.size()), 3.0);
+                    candidates_evaluated *= pow(1 - p->inliers_mean_estimate(octree.size(), total_set_size)/double(octree.size()), 3.0);
                     delete p;
                 }
                 else {
@@ -268,6 +268,8 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
             add_new_primitive(best_candidate);
             candidates.swap(keep_candidates);
             keep_candidates.clear();
+
+            std::cout << "Extracted a primitive of size: " << best_candidate->supporting_inds.size() << std::endl;
         }
 
         prob_not_found = prob_candidate_not_found(params.min_shape, candidates_evaluated, min_set);
