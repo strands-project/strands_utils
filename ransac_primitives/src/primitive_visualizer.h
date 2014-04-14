@@ -1,13 +1,17 @@
 #ifndef PRIMITIVE_VISUALIZER_H
 #define PRIMITIVE_VISUALIZER_H
-
 #include <boost/thread/thread.hpp>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
+template <typename Point>
 class primitive_visualizer
 {
+public:
+    typedef Point point_type;
+    typedef pcl::PointCloud<point_type> cloud_type;
+    typedef typename cloud_type::ConstPtr cloud_const_ptr_type;
 private:
     pthread_mutex_t mutex;
     pthread_t my_viewer_thread;
@@ -15,7 +19,7 @@ public:
     bool cloud_changed;
     bool normals_changed;
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud;
+    cloud_const_ptr_type cloud;
     pcl::PointCloud<pcl::Normal>::ConstPtr cloud_normals;
     void create_thread();
     void join_thread();
@@ -36,4 +40,5 @@ public:
     }
 };
 
+#include "primitive_visualizer.hpp"
 #endif // PRIMITIVE_VISUALIZER_H

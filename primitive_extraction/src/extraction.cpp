@@ -1,11 +1,12 @@
 #include <iostream>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/filters/voxel_grid.h>
 
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_ros/point_cloud.h>
 
-#include "primitive_extractor.h"
+#include "primitive_core.h"
 #include "plane_primitive.h"
 #include "sphere_primitive.h"
 #include "cylinder_primitive.h"
@@ -16,6 +17,7 @@
 #include <Eigen/Dense>
 
 ros::Publisher pub;
+double subsampling_voxel_size;
 primitive_params params;
 std::vector<base_primitive*> primitives;
 
@@ -87,12 +89,26 @@ void write_sphere_msg(primitive_extraction::Primitive& msg, const Eigen::VectorX
 
 void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
-    pcl::fromROSMsg(*msg, *cloud);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::fromROSMsg(*msg, *msg_cloud);
+    
+    ROS_INFO("Got a point cloud of size %lu", msg_cloud->size());
+    // Create the filtering object
+    pcl::VoxelGrid<pcl::PointXYZ> sor;
+    sor.setInputCloud(msg_cloud);
+    sor.setLeafSize(subsampling_voxel_size, subsampling_voxel_size, subsampling_voxel_size);
+    sor.filter(*cloud);
+    ROS_INFO("Downsampled to %lu", cloud->size());
 
-    primitive_extractor extractor(cloud, primitives, params, NULL);
+    ros::Time begin = ros::Time::now();
+    primitive_extractor<pcl::PointXYZ> extractor(cloud, primitives, params, NULL);
     std::vector<base_primitive*> extracted;
+    ROS_INFO("Primitive extraction started...");
     extractor.extract(extracted);
+    ros::Time end = ros::Time::now();
+    ros::Duration duration = end - begin;
+    ROS_INFO("Algorithm finished after %f seconds...", duration.toSec());
     
     primitive_extraction::PrimitiveArray msg_array;
     msg_array.primitives.resize(extracted.size());
@@ -131,6 +147,7 @@ int main(int argc, char** argv)
     // while using different parameters.
     ros::NodeHandle pn("~");
     pn.param<int>("number_disjoint_subsets", params.number_disjoint_subsets, 20);
+    pn.param<double>("subsampling_voxel_size", subsampling_voxel_size, 0.02);
     pn.param<double>("octree_leaf_size", params.octree_res, 0.5);
     pn.param<double>("normal_neigbourhood", params.normal_neigbourhood, 0.04);
     pn.param<double>("inlier_threshold", params.inlier_threshold, 0.04);

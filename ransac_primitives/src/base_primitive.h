@@ -4,8 +4,7 @@
 #include <Eigen/Dense>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <pcl/visualization/pcl_visualizer.h>
-
-class primitive_octree; // primitive_octree depends on base_primitive
+//#include "primitive_octree.h"
 
 class base_primitive
 {
@@ -32,14 +31,15 @@ public:
     // create a primitive, points_required points and normals needed for the operation
     virtual bool construct(const Eigen::MatrixXd& points, const Eigen::MatrixXd& normals,
                            double inlier_threshold, double angle_threshold) = 0;
-    void refine_inliers(std::vector<primitive_octree>& octrees, Eigen::MatrixXd& points,
+    /*void refine_inliers(std::vector<primitive_octree>& octrees, Eigen::MatrixXd& points,
                         Eigen::MatrixXd& normals, double inlier_threshold, double angle_threshold);
     void final_inliers(primitive_octree& octree, Eigen::MatrixXd& points, Eigen::MatrixXd& normals,
-                       double inlier_threshold, double angle_threshold);
+                       double inlier_threshold, double angle_threshold);*/
     int refinement_level() const;
     virtual void largest_connected_component(std::vector<int>& inliers, const Eigen::MatrixXd& points) = 0;
     std::vector<int>& sorted_inliers();
     void inliers_estimate(double& mean, double& a, double& b, int set_size, std::vector<int>& total_set_size);
+    double inliers_mean_estimate(int set_size, std::vector<int>& total_set_size);
     // check for primitives, takes all points and normals considered and the indices that are still unoccupied by primitives
     virtual void compute_inliers(std::vector<int>& inliers, const Eigen::MatrixXd& points, const Eigen::MatrixXd& normals,
                                  const std::vector<int>& inds, double inlier_threshold, double angle_threshold) = 0;
@@ -63,6 +63,58 @@ public:
     virtual base_primitive* instantiate() = 0;
     virtual ~base_primitive() {}
     base_primitive() : inlier_refinement(0) {}
+
+    // compute the number of inliers on the whole point cloud
+    template <typename Octree>
+    void final_inliers(Octree& octree, Eigen::MatrixXd& points, Eigen::MatrixXd& normals,
+                       double inlier_threshold, double angle_threshold)
+    {
+        if (inlier_refinement == number_disjoint_subsets) {
+            return;
+        }
+        inlier_refinement = number_disjoint_subsets;
+        std::vector<int> inds;
+        octree.find_potential_inliers(inds, this, 0.01);
+        conforming_inds.clear();
+        compute_inliers(conforming_inds, points, normals, inds, inlier_threshold, angle_threshold);
+        supporting_inds.clear();
+        std::vector<int> temp;
+        largest_connected_component(temp, points);
+        supporting_inds.swap(temp);
+        std::sort(supporting_inds.begin(), supporting_inds.end());
+        sorted = true;
+    }
+
+    template <typename Octree>
+    void refine_inliers(std::vector<Octree>& octrees, Eigen::MatrixXd& points,
+                        Eigen::MatrixXd& normals, double inlier_threshold, double angle_threshold)
+    {
+        if (inlier_refinement == number_disjoint_subsets) {
+            return;
+        }
+        ++inlier_refinement; // check if larger than disjoint sets?
+        std::vector<int> inds;
+        int n = inlier_refinement - 1;
+        octrees[n].find_potential_inliers(inds, this, 0.01);
+        std::vector<int> inliers;
+        compute_inliers(inliers, points, normals, inds, inlier_threshold, angle_threshold);
+        /*if (inlier_refinement == 1 && inliers.size() < 10) {
+            return;
+        }*/
+        conforming_inds.insert(conforming_inds.end(), inliers.begin(), inliers.end());
+        /*if (conforming_inds.size() < min_inliers) {
+
+        }*/
+        if (inlier_refinement == 1) {
+            supporting_inds = conforming_inds;
+        }
+        else {
+            inliers.clear();
+            largest_connected_component(inliers, points);
+            supporting_inds.swap(inliers);
+        }
+        sorted = false;
+    }
 };
 
 #endif // BASE_PRIMITIVE_H
