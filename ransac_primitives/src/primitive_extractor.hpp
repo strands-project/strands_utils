@@ -195,8 +195,12 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
         for (base_primitive* p : primitives) {
             base_primitive* c = p->instantiate();
             if (c->construct(points, normals, params.inlier_threshold, params.angle_threshold)) {
-                candidates.push_back(c);
                 c->refine_inliers(octrees, mpoints, mnormals, params.inlier_threshold, params.angle_threshold);
+                if (c->supporting_inds.empty()) {
+                    delete c;
+                    continue;
+                }
+                candidates.push_back(c);
                 level_scores(level) += c->supporting_inds.size(); // TODO: this must be expected value instead
                 // should this get updated when intervals are refined? should be easy
             }
@@ -270,6 +274,7 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
             keep_candidates.clear();
 
             std::cout << "Extracted a primitive of size: " << best_candidate->supporting_inds.size() << std::endl;
+            std::cout << "Octree depth level scores: " << level_scores.transpose() << std::endl;
         }
 
         prob_not_found = prob_candidate_not_found(params.min_shape, candidates_evaluated, min_set);
@@ -440,18 +445,26 @@ void primitive_extractor<pcl::PointXYZRGB>::color_primitive(base_primitive* p)
 template <typename Point>
 int primitive_extractor<Point>::sample_level(int iteration)
 {
-    if (iteration < 200) {
-        return rand() % tree_depth;
+    ArrayXd pdf;
+    if (level_scores(0) < 200000) {
+        pdf.resize(tree_depth);
+        //return rand() % tree_depth; // sample with prob 1/d instead
+        for (int j = 0; j < tree_depth; ++j) {
+            pdf(j) = 1.0/(1.0 + double(j));
+        }
+        pdf /= pdf.sum();
     }
-    // rejection sampling approach
-    double x = 0.9;
-    double weight = double(level_scores.sum());
-    ArrayXd pdf = x/weight*level_scores.cast<double>() + (1-x)*1/double(tree_depth);
+    else {
+        // rejection sampling approach
+        double x = 0.9;
+        double weight = double(level_scores.sum());
+        pdf = x/weight*level_scores.cast<double>() + (1-x)*1/double(tree_depth);
+        if (PRINTOUTS) {
+            std::cout << "Pdf: " << pdf.transpose() << std::endl;
+            std::cout << "Level scores: " << level_scores.transpose() << std::endl;
+        }
+    }
     double maxval = pdf.maxCoeff();
-    if (PRINTOUTS) {
-        std::cout << "Pdf: " << pdf.transpose() << std::endl;
-        std::cout << "Level scores: " << level_scores.transpose() << std::endl;
-    }
     int i;
     double d;
     while (true) {

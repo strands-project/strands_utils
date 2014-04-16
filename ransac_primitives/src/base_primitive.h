@@ -4,10 +4,14 @@
 #include <Eigen/Dense>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <pcl/visualization/pcl_visualizer.h>
-//#include "primitive_octree.h"
 
 class base_primitive
 {
+private:
+    double a_cached; // lower bound of inliers confidence interval
+    double b_cached; // upper bound of inliers confidence interval
+    double mean_cached; // mean estimate of inliers
+    bool interval_cached;
 public:
     // the different kinds of primitives that we are treating, only used for coloring
     enum shape {PLANE, SPHERE, CYLINDER, TORUS, CONE};
@@ -72,6 +76,7 @@ public:
         if (inlier_refinement == number_disjoint_subsets) {
             return;
         }
+        interval_cached = false;
         inlier_refinement = number_disjoint_subsets;
         std::vector<int> inds;
         octree.find_potential_inliers(inds, this, 0.01);
@@ -92,20 +97,21 @@ public:
         if (inlier_refinement == number_disjoint_subsets) {
             return;
         }
+        interval_cached = false;
         ++inlier_refinement; // check if larger than disjoint sets?
         std::vector<int> inds;
         int n = inlier_refinement - 1;
         octrees[n].find_potential_inliers(inds, this, 0.01);
         std::vector<int> inliers;
         compute_inliers(inliers, points, normals, inds, inlier_threshold, angle_threshold);
-        /*if (inlier_refinement == 1 && inliers.size() < 10) {
+        if (inliers.size() < 40) {
             return;
-        }*/
+        }
         conforming_inds.insert(conforming_inds.end(), inliers.begin(), inliers.end());
         /*if (conforming_inds.size() < min_inliers) {
 
         }*/
-        if (inlier_refinement == 1) {
+        if (inlier_refinement == 1 || inlier_refinement < number_disjoint_subsets/2) {
             supporting_inds = conforming_inds;
         }
         else {
