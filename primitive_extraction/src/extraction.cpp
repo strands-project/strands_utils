@@ -156,7 +156,7 @@ int main(int argc, char** argv)
     pn.param<int>("min_inliers", params.inlier_min, 2000);
     pn.param<int>("min_terminate", params.min_shape, 2000);
     pn.param<double>("connectedness_dist", params.connectedness_res, 0.03);
-    pn.param<double>("distance_threshold", params.distance_threshold, 4.0);
+    pn.param<double>("distance_threshold", params.distance_threshold, 0.0);
     bool extract_planes, extract_cylinders, extract_spheres;
     pn.param<bool>("extract_planes", extract_planes, true);
     pn.param<bool>("extract_cylinders", extract_cylinders, true);
