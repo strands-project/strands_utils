@@ -1,8 +1,7 @@
 #include "base_primitive.h"
 
 #include <algorithm>
-#include <opencv2/highgui/highgui.hpp> // DEBUG
-#include "primitive_octree.h"
+#include <opencv2/highgui/highgui.hpp>
 
 using namespace Eigen;
 
@@ -14,64 +13,41 @@ int base_primitive::number_disjoint_subsets = 20;
 // compute the confidence interval for the estimate of the number of inliers on the whole point cloud
 void base_primitive::inliers_estimate(double& mean, double& a, double& b, int set_size, std::vector<int>& total_set_size)
 {
-    double N = -2.0 - double(total_set_size[inlier_refinement-1]);
-    double x = -2.0 - double(set_size);
-    double n = -1.0 - double(supporting_inds.size());
-    mean = -1.0 - x*n/N;
-    double dev = 1.0/N*sqrt(x*n*(N-x)*(N+n)/(N-1));
-    a = mean + dev;
-    b = mean - dev;
+    if (!interval_cached) {
+        if (inlier_refinement == number_disjoint_subsets) {
+            mean_cached = double(supporting_inds.size());
+            a_cached = mean_cached;
+            b_cached = mean_cached;
+        }
+        else {
+            double N = -2.0 - double(total_set_size[inlier_refinement-1]);
+            double x = -2.0 - double(set_size);
+            double n = -1.0 - double(supporting_inds.size());
+            mean_cached = -1.0 - x*n/N;
+            double dev = 1.0/N*sqrt(x*n*(N-x)*(N+n)/(N-1));
+            a_cached = mean_cached + dev;
+            b_cached = mean_cached - dev;
+        }
+        interval_cached = true;
+    }
+
+    mean = mean_cached;
+    a = a_cached;
+    b = b_cached;
 }
 
-// compute the number of inliers on the whole point cloud
-void base_primitive::final_inliers(primitive_octree& octree, MatrixXd& points, MatrixXd& normals,
-                                   double inlier_threshold, double angle_threshold)
+// compute the estimate of the number of inliers on the whole point cloud
+double base_primitive::inliers_mean_estimate(int set_size, std::vector<int>& total_set_size)
 {
-    if (inlier_refinement == number_disjoint_subsets) {
-        return;
+    if (interval_cached) {
+        return mean_cached;
     }
-    inlier_refinement = number_disjoint_subsets;
-    std::vector<int> inds;
-    octree.find_potential_inliers(inds, this, 0.01);
-    conforming_inds.clear();
-    compute_inliers(conforming_inds, points, normals, inds, inlier_threshold, angle_threshold);
-    supporting_inds.clear();
-    std::vector<int> temp;
-    largest_connected_component(temp, points);
-    supporting_inds.swap(temp);
-    std::sort(supporting_inds.begin(), supporting_inds.end());
-    sorted = true;
+    double mean;
+    double t1, t2;
+    inliers_estimate(mean, t1, t2, set_size, total_set_size);
+    return mean;
 }
 
-void base_primitive::refine_inliers(std::vector<primitive_octree>& octrees, MatrixXd& points,
-                                    MatrixXd& normals, double inlier_threshold, double angle_threshold)
-{
-    if (inlier_refinement == number_disjoint_subsets) {
-        return;
-    }
-    ++inlier_refinement; // check if larger than disjoint sets?
-    std::vector<int> inds;
-    int n = inlier_refinement - 1;
-    octrees[n].find_potential_inliers(inds, this, 0.01);
-    std::vector<int> inliers;
-    compute_inliers(inliers, points, normals, inds, inlier_threshold, angle_threshold);
-    /*if (inlier_refinement == 1 && inliers.size() < 10) {
-        return;
-    }*/
-    conforming_inds.insert(conforming_inds.end(), inliers.begin(), inliers.end());
-    /*if (conforming_inds.size() < min_inliers) {
-
-    }*/
-    if (inlier_refinement == 1) {
-        supporting_inds = conforming_inds;
-    }
-    else {
-        inliers.clear();
-        largest_connected_component(inliers, points);
-        supporting_inds.swap(inliers);
-    }
-    sorted = false;
-}
 
 // we need the inliers to be sorted when finding mutual inliers between
 // primitives via are_contained

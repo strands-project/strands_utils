@@ -3,11 +3,11 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include "primitive_extractor.h"
-#include "primitive_visualizer.h"
+#include "primitive_core.h"
 #include "plane_primitive.h"
 #include "sphere_primitive.h"
 #include "cylinder_primitive.h"
+
 
 #include <pcl/features/normal_3d.h>
 
@@ -40,8 +40,8 @@ int main(int argc, char** argv)
     params.connectedness_res = 0.01;
     params.distance_threshold = 4.0;
 
-    primitive_visualizer viewer;
-    primitive_extractor extractor(cloud, primitives, params, &viewer);
+    primitive_visualizer<pcl::PointXYZRGB> viewer;
+    primitive_extractor<pcl::PointXYZRGB> extractor(cloud, primitives, params, &viewer);
     viewer.cloud = extractor.get_cloud();
     viewer.cloud_changed = true;
     viewer.cloud_normals = extractor.get_normals();

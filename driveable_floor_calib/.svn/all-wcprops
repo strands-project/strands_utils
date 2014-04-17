@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/v4r/!svn/ver/6175/trunk/ros/hobbit_hydro_src/top_kinect
+END
+package.xml
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/v4r/!svn/ver/6175/trunk/ros/hobbit_hydro_src/top_kinect/package.xml
+END
+qrc_images.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/v4r/!svn/ver/6159/trunk/ros/hobbit_hydro_src/top_kinect/qrc_images.cxx
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/v4r/!svn/ver/6159/trunk/ros/hobbit_hydro_src/top_kinect/CMakeLists.txt
+END
+Params_xpc2.txt
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/v4r/!svn/ver/6159/trunk/ros/hobbit_hydro_src/top_kinect/Params_xpc2.txt
+END
+Params.txt
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/v4r/!svn/ver/6159/trunk/ros/hobbit_hydro_src/top_kinect/Params.txt
+END
