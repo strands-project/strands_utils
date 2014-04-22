@@ -107,6 +107,11 @@ typename primitive_extractor<Point>::cloud_const_ptr primitive_extractor<Point>:
 template <typename Point>
 void primitive_extractor<Point>::remove_distant_points(cloud_ptr new_cloud, double dist)
 {
+    // if 0 is passed in as parameter, don't do anything
+    if (dist == 0) {
+        cloud->insert(cloud->end(), new_cloud->begin(), new_cloud->end());
+        return;
+    }
     // filter out points that are far from the camera and thus will contain too much noise
     pcl::PassThrough<point_type> pass;
     pass.setInputCloud(new_cloud);

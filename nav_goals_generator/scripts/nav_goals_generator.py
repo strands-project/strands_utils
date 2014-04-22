@@ -119,7 +119,7 @@ class NavGoalsGenerator():
 
             # generate response
             res = NavGoalsResponse()
-            res.goals.header.frame_id = self.map_frame
+            res.goals.header.frame_id = '/map' # self.map_frame
             res.goals.poses = []
 
             self.delete_markers()            
