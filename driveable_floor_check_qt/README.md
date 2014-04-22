@@ -6,7 +6,9 @@ This package is Qt based. The console version can be found in *https://github.co
 
 To start floor detection, do:
 
-```rosrun driveable_floor_check_qt driveable_floor_check_qt Params.txt _cam_info_topic:=/camera/depth_registered/camera_info _disparity_img_topic:=/camera/depth_registered/disparity _active_topic:=/camera/active```
+```
+rosrun driveable_floor_check_qt driveable_floor_check_qt Params.txt _cam_info_topic:=/camera/depth_registered/camera_info _disparity_img_topic:=/camera/depth_registered/disparity _active_topic:=/camera/active
+```
 
 and press *Connect* in the Qt window.
 
