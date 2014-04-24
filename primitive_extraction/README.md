@@ -19,3 +19,7 @@ The launch file contains a bunch of options and parameters, notably:
 * `min_terminate` - Terminate when no shapes with more inliers than this are left.
 * `connectedness_dist` - Discretization of connectedness on primitive surfaces, used to extract the largest connected region.
 * `distance_threshold` - Do not consider any points further away from the camera than this.
+
+Trouble-shooting
+----------------
+Older versions of GCC (notably 4.6.3 currently the default on Ubuntu 12.04) have a problem with the AVX instructions on new versions of Intel Core i7. To get around these compilation problems, add `-mno-avx` to the `CMAKE_CXX_FLAGS` in this package.
