@@ -19,18 +19,18 @@
 	    <!-- The size of the neighbourhood used to compute normals -->
 	    <param name="normal_neigbourhood" type="double" value="0.03"/>
 	    <!-- Largest distance from primitive for a point to be inlier -->
-	    <param name="inlier_threshold" type="double" value="0.03"/>
+	    <param name="inlier_threshold" type="double" value="0.04"/>
 	    <!-- The largest allowed deviation of point normal from surface normal -->
 	    <param name="angle_threshold" type="double" value="0.3"/>
 	    <!-- The probability of extracting a primitive which is not the largest -->
 	    <param name="error_add_probability" type="double" value="0.01"/>
 	    <!-- Do not consider any shapes with fewer inliers than this -->
-	    <param name="min_inliers" type="int" value="4000"/>
+	    <param name="min_inliers" type="int" value="3000"/>
 	    <!-- Terminate when no shapes larger than this are left -->
-	    <param name="min_terminate" type="int" value="4000"/>
+	    <param name="min_terminate" type="int" value="3000"/>
 	    <!-- Discretization of connectedness on primitive surfaces -->
 	    <!-- Used to extract the largest connected region -->
-	    <param name="connectedness_dist" type="double" value="0.03"/>
+	    <param name="connectedness_dist" type="double" value="0.05"/>
 	    <!-- Do not consider any points further away from the camera than this -->
 	    <param name="distance_threshold" type="double" value="0.0"/>
 	    <!-- Choose which types of primitives to extract -->
