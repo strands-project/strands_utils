@@ -1,0 +1,8 @@
+#!/bin/bash
+
+STRANDS_HOSTNAME=$(echo $HOSTNAME | sed -e 's/-/_/g' -e 's/ /_/g' -e 's/\(.*\)/\L\1/')
+
+echo 'The strands hostname is ' $STRANDS_HOSTNAME
+
+echo 'STRANDS_HOSTNAME='$STRANDS_HOSTNAME >> $HOME/.bashrc
+
