@@ -1,4 +1,4 @@
-# Change environment varialbe HOSTNAME to a ros friendly format
+# Change environment variable HOSTNAME to a ros friendly format
 
 This script modifies the hostname of the machine (removes -, spaces, changes upper case letters to lower case letters) and sets the result in the STRANDS_HOSTNAME environment variable in the bashrc.
 
