@@ -20,6 +20,8 @@ ros::Publisher pub;
 double subsampling_voxel_size;
 primitive_params params;
 std::vector<base_primitive*> primitives;
+double min_height;
+double max_height;
 
 void write_plane_msg(primitive_extraction::Primitive& msg, const Eigen::VectorXd& data, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> >& points)
 {
@@ -98,6 +100,10 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::VoxelGrid<pcl::PointXYZ> sor;
     sor.setInputCloud(msg_cloud);
     sor.setLeafSize(subsampling_voxel_size, subsampling_voxel_size, subsampling_voxel_size);
+    if (min_height != 0.0 || max_height != 0.0) {
+        sor.setFilterFieldName("z");
+        sor.setFilterLimits(min_height, max_height);
+    }
     sor.filter(*cloud);
     ROS_INFO("Downsampled to %lu", cloud->size());
 
@@ -161,6 +167,8 @@ int main(int argc, char** argv)
     pn.param<bool>("extract_planes", extract_planes, true);
     pn.param<bool>("extract_cylinders", extract_cylinders, true);
     pn.param<bool>("extract_spheres", extract_spheres, true);
+    pn.param<double>("min_height", min_height, 0.0);
+    pn.param<double>("max_height", max_height, 0.0);
     std::string input;
     pn.param<std::string>("input", input, std::string("/primitive_extraction/input"));
     std::string output;

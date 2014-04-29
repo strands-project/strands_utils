@@ -9,9 +9,15 @@
     <arg name="extract_planes" default="true"/>
     <arg name="extract_cylinders" default="true"/>
     <arg name="extract_spheres" default="true"/>
+    <!-- The min and max height between which to extract, 0 for no bounds -->
+    <arg name="min_height" default="0.0"/>
+    <arg name="max_height" default="0.0"/>
 
     <!-- Launch the primitive extraction -->
 	<node pkg="primitive_extraction" type="extraction" name="extraction" output="screen">
+	    <!-- The min and max height between which to extract, 0 for no bounds -->
+	    <param name="min_height" type="double" value="$(arg min_height)"/>
+	    <param name="max_height" type="double" value="$(arg max_height)"/>
 	    <param name="subsampling_voxel_size" type="double" value="0.015"/>
 	    <param name="number_disjoint_subsets" type="int" value="10"/>
 	    <!-- The size of the octree nodes, mainly influences speed -->
