@@ -61,14 +61,14 @@ add_message_files(
   FILES
   Primitive.msg
   PrimitiveArray.msg
+  Indices.msg
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  ExtractPrimitives.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -82,6 +82,7 @@ generate_messages(
    DEPENDENCIES
    std_msgs
    geometry_msgs
+   sensor_msgs
 )
 
 ###################################
@@ -96,7 +97,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES primitive_extraction
-   CATKIN_DEPENDS geometry_msgs message_runtime
+   CATKIN_DEPENDS geometry_msgs message_runtime sensor_msgs
 #  DEPENDS system_lib
 )
 

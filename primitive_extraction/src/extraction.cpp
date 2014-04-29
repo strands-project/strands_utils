@@ -13,6 +13,7 @@
 
 #include "primitive_extraction/Primitive.h"
 #include "primitive_extraction/PrimitiveArray.h"
+#include "primitive_extraction/ExtractPrimitives.h"
 
 #include <Eigen/Dense>
 
@@ -89,11 +90,12 @@ void write_sphere_msg(primitive_extraction::Primitive& msg, const Eigen::VectorX
     msg.params[0] = data(3); // radius
 }
 
-void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
+void extract(primitive_extraction::PrimitiveArray& msg_array, std::vector<base_primitive*>& extracted, 
+             const sensor_msgs::PointCloud2& msg)
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud(new pcl::PointCloud<pcl::PointXYZ>());
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
-    pcl::fromROSMsg(*msg, *msg_cloud);
+    pcl::fromROSMsg(msg, *msg_cloud);
     
     ROS_INFO("Got a point cloud of size %lu", msg_cloud->size());
     // Create the filtering object
@@ -109,38 +111,61 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
     ros::Time begin = ros::Time::now();
     primitive_extractor<pcl::PointXYZ> extractor(cloud, primitives, params, NULL);
-    std::vector<base_primitive*> extracted;
     ROS_INFO("Primitive extraction started...");
     extractor.extract(extracted);
     ros::Time end = ros::Time::now();
     ros::Duration duration = end - begin;
     ROS_INFO("Algorithm finished after %f seconds...", duration.toSec());
     
-    primitive_extraction::PrimitiveArray msg_array;
     msg_array.primitives.resize(extracted.size());
-    msg_array.camera_frame = msg->header.frame_id;
+    msg_array.camera_frame = msg.header.frame_id;
     
     for (size_t i = 0; i < extracted.size(); ++i) {
-        primitive_extraction::Primitive msg;
+        primitive_extraction::Primitive primitive_msg;
         Eigen::VectorXd data;
         std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > points;
         extracted[i]->shape_data(data);
         switch (extracted[i]->get_shape()) {
         case base_primitive::PLANE: 
             extracted[i]->shape_points(points);
-            write_plane_msg(msg, data, points);
+            write_plane_msg(primitive_msg, data, points);
             break;
         case base_primitive::CYLINDER:
-            write_cylinder_msg(msg, data);
+            write_cylinder_msg(primitive_msg, data);
             break;
         case base_primitive::SPHERE:
-            write_sphere_msg(msg, data);
+            write_sphere_msg(primitive_msg, data);
             break;
         }
-        msg_array.primitives[i] = msg;
+        msg_array.primitives[i] = primitive_msg;
     }
-    
+}
+
+void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
+{
+    primitive_extraction::PrimitiveArray msg_array;
+    std::vector<base_primitive*> extracted;
+    extract(msg_array, extracted, *msg);
+    for (size_t i = 0; i < extracted.size(); ++i) {
+        delete extracted[i];
+    }
     pub.publish(msg_array);
+}
+
+bool service_callback(primitive_extraction::ExtractPrimitives::Request& req,
+                      primitive_extraction::ExtractPrimitives::Response& res)
+{
+    std::vector<base_primitive*> extracted;
+    extract(res.primitives, extracted, req.pointcloud);
+    res.indices.resize(extracted.size());
+    for (size_t i = 0; i < extracted.size(); ++i) {
+        res.indices[i].indices.resize(extracted[i]->supporting_inds.size());
+        for (size_t j = 0; j < extracted[i]->supporting_inds.size(); ++j) {
+            res.indices[i].indices[j] = extracted[i]->supporting_inds[j];
+        }
+        delete extracted[i];
+    }
+    return true;
 }
 
 int main(int argc, char** argv)
@@ -186,6 +211,7 @@ int main(int argc, char** argv)
 	
 	ros::Subscriber sub = n.subscribe(input, 1, callback);
 	pub = n.advertise<primitive_extraction::PrimitiveArray>(output, 1);
+	ros::ServiceServer service = n.advertiseService("extract_primitives", &service_callback);
     
     ros::spin();
     
