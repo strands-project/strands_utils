@@ -9,17 +9,23 @@
     <arg name="extract_planes" default="true"/>
     <arg name="extract_cylinders" default="true"/>
     <arg name="extract_spheres" default="true"/>
+    <!-- The min and max height between which to extract, 0 for no bounds -->
+    <arg name="min_height" default="0.0"/>
+    <arg name="max_height" default="0.0"/>
 
     <!-- Launch the primitive extraction -->
 	<node pkg="primitive_extraction" type="extraction" name="extraction" output="screen">
-	    <param name="subsampling_voxel_size" type="double" value="0.015"/>
+	    <!-- The min and max height between which to extract, 0 for no bounds -->
+	    <param name="min_height" type="double" value="$(arg min_height)"/>
+	    <param name="max_height" type="double" value="$(arg max_height)"/>
+	    <param name="subsampling_voxel_size" type="double" value="0.01"/>
 	    <param name="number_disjoint_subsets" type="int" value="10"/>
 	    <!-- The size of the octree nodes, mainly influences speed -->
 	    <param name="octree_leaf_size" type="double" value="1.0"/>
 	    <!-- The size of the neighbourhood used to compute normals -->
 	    <param name="normal_neigbourhood" type="double" value="0.03"/>
 	    <!-- Largest distance from primitive for a point to be inlier -->
-	    <param name="inlier_threshold" type="double" value="0.04"/>
+	    <param name="inlier_threshold" type="double" value="0.03"/>
 	    <!-- The largest allowed deviation of point normal from surface normal -->
 	    <param name="angle_threshold" type="double" value="0.3"/>
 	    <!-- The probability of extracting a primitive which is not the largest -->
@@ -30,7 +36,7 @@
 	    <param name="min_terminate" type="int" value="3000"/>
 	    <!-- Discretization of connectedness on primitive surfaces -->
 	    <!-- Used to extract the largest connected region -->
-	    <param name="connectedness_dist" type="double" value="0.05"/>
+	    <param name="connectedness_dist" type="double" value="0.04"/>
 	    <!-- Do not consider any points further away from the camera than this -->
 	    <param name="distance_threshold" type="double" value="0.0"/>
 	    <!-- Choose which types of primitives to extract -->
