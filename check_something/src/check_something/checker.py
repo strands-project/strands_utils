@@ -35,7 +35,15 @@ class Checker(object):
         
         self.action_client.send_goal(goal)
 
-        self.action_client.wait_for_result()
+        wait = rospy.Duration(0.5)
+        while not rospy.is_shutdown() and \
+                not self.server.is_preempt_requested() and \
+                not self.action_client.wait_for_result(wait):
+            pass   
+            
+        if self.server.is_preempt_requested():
+            self.action_client.cancel_goal()
+
 
         result = self.action_client.get_result()
         state = self.action_client.get_state()
