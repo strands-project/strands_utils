@@ -27,9 +27,9 @@ class DoorChecker(Checker):
 	def generate_report(self, state, result):	
 		if state == GoalStatus.SUCCEEDED:
 			if result.open:
-				self.speak("Door is open")
+				self.speak("I think the door is open")
 			else:
-				self.speak("Door is closed")
+				self.speak("I think the door is closed")
 		else:	
 			rospy.loginfo("Action interrupted or aborted")
 
