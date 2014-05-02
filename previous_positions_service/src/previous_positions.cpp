@@ -19,11 +19,9 @@ void callback(const geometry_msgs::Pose::ConstPtr& msg)
         return;
     }
     poses.push_front(*msg);
-    ROS_INFO("Added pose!");
     p2 = Eigen::Vector3d(poses.back().position.x, poses.back().position.y, poses.back().position.z);
     while (!poses.empty() && (p1 - p2).norm() > 2.0) {
         poses.pop_back();
-        ROS_INFO("Removed pose!");
         p2 = Eigen::Vector3d(poses.back().position.x, poses.back().position.y, poses.back().position.z);
     }
 }
