@@ -8,6 +8,9 @@ ros::Subscriber* sub;
 ros::Publisher* pub;
 ros::NodeHandle* n;
 float subsampling;
+std::string output;
+std::string last_frame;
+int last_seq;
 
 void callback(const sensor_msgs::PointCloud2::ConstPtr& input_msg)
 {
@@ -22,8 +25,9 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& input_msg)
     
     sensor_msgs::PointCloud2 output_msg;
     pcl::toROSMsg(*voxel_cloud, output_msg);
-	output_msg.header.frame_id = input_msg->header.frame_id;
-	output_msg.header.stamp = input_msg->header.stamp;
+    last_frame = input_msg->header.frame_id;
+    last_seq = input_msg->header.seq;
+	output_msg.header = input_msg->header;
     pub->publish(output_msg);
 }
 
@@ -31,6 +35,14 @@ bool service_callback(republish_pointcloud_service::RepublishPointcloud::Request
                       republish_pointcloud_service::RepublishPointcloud::Response& res)
 {
     if (!req.republish) {
+        // publishing a last empty message so that points are not lingering in move_base
+        pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+        sensor_msgs::PointCloud2 output_msg;
+        pcl::toROSMsg(*msg_cloud, output_msg);
+        output_msg.header.frame_id = last_frame;
+        output_msg.header.stamp = ros::Time::now();
+        output_msg.header.seq = last_seq + 1;
+        pub->publish(output_msg);
         delete sub; sub = NULL;
         delete pub; pub = NULL;
         return true;
@@ -38,6 +50,7 @@ bool service_callback(republish_pointcloud_service::RepublishPointcloud::Request
     subsampling = req.subsampling;
     sub = new ros::Subscriber(n->subscribe(req.input, 1, callback));
     pub = new ros::Publisher(n->advertise<sensor_msgs::PointCloud2>(req.output, 1));
+    output = req.output;
     return true;
 }
 
