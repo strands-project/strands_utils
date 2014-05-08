@@ -37,6 +37,10 @@ bool service_callback(republish_pointcloud_service::RepublishPointcloud::Request
     if (!req.republish) {
         // publishing a last empty message so that points are not lingering in move_base
         pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+        msg_cloud->points.resize(1);
+        msg_cloud->points[0].x = 0.01;
+        msg_cloud->points[0].y = 0.01;
+        msg_cloud->points[0].z = 0.01;
         sensor_msgs::PointCloud2 output_msg;
         pcl::toROSMsg(*msg_cloud, output_msg);
         output_msg.header.frame_id = last_frame;
