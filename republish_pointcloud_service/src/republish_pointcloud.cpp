@@ -11,6 +11,8 @@ float subsampling;
 std::string output;
 std::string last_frame;
 int last_seq;
+bool first;
+bool publish_empty;
 
 void callback(const sensor_msgs::PointCloud2::ConstPtr& input_msg)
 {
@@ -34,27 +36,22 @@ void callback(const sensor_msgs::PointCloud2::ConstPtr& input_msg)
 bool service_callback(republish_pointcloud_service::RepublishPointcloud::Request& req,
                       republish_pointcloud_service::RepublishPointcloud::Response& res)
 {
-    if (!req.republish) {
-        // publishing a last empty message so that points are not lingering in move_base
-        pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud(new pcl::PointCloud<pcl::PointXYZ>());
-        msg_cloud->points.resize(1);
-        msg_cloud->points[0].x = 0.01;
-        msg_cloud->points[0].y = 0.01;
-        msg_cloud->points[0].z = 0.01;
-        sensor_msgs::PointCloud2 output_msg;
-        pcl::toROSMsg(*msg_cloud, output_msg);
-        output_msg.header.frame_id = last_frame;
-        output_msg.header.stamp = ros::Time::now();
-        output_msg.header.seq = last_seq + 1;
-        pub->publish(output_msg);
-        delete sub; sub = NULL;
-        delete pub; pub = NULL;
+    if (first && !req.republish) {
         return true;
     }
-    subsampling = req.subsampling;
+    if (!req.republish) {
+        delete sub; sub = NULL;
+        publish_empty = true;
+        return true;
+    }
+    if (first) {
+        pub = new ros::Publisher(n->advertise<sensor_msgs::PointCloud2>(req.output, 1));
+        first = false;
+    }
     sub = new ros::Subscriber(n->subscribe(req.input, 1, callback));
-    pub = new ros::Publisher(n->advertise<sensor_msgs::PointCloud2>(req.output, 1));
+    subsampling = req.subsampling;    
     output = req.output;
+    publish_empty = false;
     return true;
 }
 
@@ -64,8 +61,31 @@ int main(int argc, char** argv)
 	n = new ros::NodeHandle();
 	sub = NULL;
 	pub = NULL;
-	subsampling = 0.5;
+	subsampling = 0.05;
+	first = true;
+	publish_empty = false;
+	
+	pcl::PointCloud<pcl::PointXYZ>::Ptr msg_cloud(new pcl::PointCloud<pcl::PointXYZ>());
+    msg_cloud->points.resize(1);
+    msg_cloud->points[0].x = 0.01;
+    msg_cloud->points[0].y = 0.01;
+    msg_cloud->points[0].z = 0.01;
+    sensor_msgs::PointCloud2 output_msg;
+    pcl::toROSMsg(*msg_cloud, output_msg);
+    
 	ros::ServiceServer service = n->advertiseService("republish_pointcloud", &service_callback);
-	ros::spin();
+	ros::Rate rate(5);
+	while (n->ok()) {
+	    if (publish_empty && pub != NULL) {
+	        output_msg.header.frame_id = last_frame;
+            output_msg.header.stamp = ros::Time::now();
+            output_msg.header.seq = last_seq + 1;
+            ++last_seq;
+	        pub->publish(output_msg);
+	    }
+	    rate.sleep();
+	    ros::spinOnce();
+	}
+
 	return 0;
 }
