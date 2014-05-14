@@ -43,7 +43,7 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 			try:
 				ftp.mkd(intFolder)
 				ftp.cwd(intFolder)
-				print 'Creating folder ',intFolder,' on FTP'
+				print 'Creating folder ',intFolder,' on server'
 			except:
 				print 'Cannot create remote folder'
 				return
@@ -74,7 +74,7 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath):
  	files_copied = 0
 	for filename in localFiles:
 		try:
-			print 'Uploading file ', filename, ' to FTP'
+			print 'Uploading file ', filename, ' to server'
 			ftp.storlines('STOR ' + filename, open(filename, 'r'))
 			files_copied+= 1			
 		except:	
@@ -90,7 +90,7 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 			try:
 				ftp.mkd(directory)
 				ftp.cwd(directory)
-				print 'Creating folder ',directory,' on FTP'
+				print 'Creating folder ',directory,' on server'
 			except:
 				print 'Cannot create remote folder'
 				return
