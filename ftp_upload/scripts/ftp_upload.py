@@ -1,13 +1,12 @@
 #!/usr/bin/python
 
 import sys
-import ftplib
+import os
+from sets import Set
+from ftplib import FTP
 
 def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath):
 	"""Connect to an FTP server and bring down files to a local directory"""
-	import os
-	from sets import Set
-	from ftplib import FTP
 
 	# open FTP connection, login and cd to the correct directory
 	print "\n-- Connecting to FTP ----\n"
@@ -48,20 +47,29 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 			except:
 				print 'Cannot create remote folder'
 				return
+		else: 
+			ftp.cwd(intFolder)
+
+	print "\n-- Uploading Files----\n"
+	uploadFolder(ftp,remotePath,remoteFolder,localPath)	
+
+def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 	
 	# cd to the correct directory on the local system
 	try:
 		os.chdir(localPath)
 	except:
-		print 'Cannot cd to local path'
+		print 'Cannot cd to local path', localPath
 		return
-
+	
 	localFiles = []
+	localDirs = []
 	for (dirpath, dirnames, filenames) in os.walk(localPath):
 	    localFiles.extend(filenames)
+	    localDirs.extend(dirnames)
 	    break
 
-	print "\n-- Uploading Files----\n"
+
 	# upload local files to remote folder
  	files_copied = 0
 	for filename in localFiles:
@@ -72,8 +80,28 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 		except:	
 			print 'Could not upload file ',filename
 
-	print 'Uploaded ',files_copied,' out of ', len(localFiles), ' files.'
+	print 'Uploaded ',files_copied,' out of ', len(localFiles), ' files from folder ',localPath
 
+	# recursively upload files from child folders
+	for directory in localDirs:
+	       # create directory on the FTP
+		rFileSet = Set(ftp.nlst())
+		if not directory in rFileSet:
+			try:
+				ftp.mkd(directory)
+				ftp.cwd(directory)
+				print 'Creating folder ',directory,' on FTP'
+			except:
+				print 'Cannot create remote folder'
+				return
+		else: 
+			ftp.cwd(directory)
+		newRemotePath = remotePath+'/'+directory
+		newRemoteFolder = remoteFolder + '/'+directory
+		newLocalPath = localPath+'/'+directory
+		uploadFolder(ftp, newRemotePath, newRemoteFolder, newLocalPath)
+		ftp.cwd('..')
+				
 
 if __name__ == '__main__':
 	
