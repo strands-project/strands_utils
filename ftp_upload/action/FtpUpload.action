@@ -1,0 +1,14 @@
+#goal
+string ftp_server
+string username
+string password
+string remote_path
+string remote_folder
+string local_path
+bool delete_after_upload
+---
+#result
+bool success
+---
+#feedback
+string current_folder
