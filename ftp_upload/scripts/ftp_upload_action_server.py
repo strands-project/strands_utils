@@ -29,7 +29,7 @@ class FTPUploadServer:
 
 	print 'Starting FTP upload to server ',goal.ftp_server
 
-	retVal = moveFTPFiles(goal.ftp_server, goal.username, goal.password, goal.remote_path, goal.remote_folder, goal.local_path)
+	retVal = moveFTPFiles(goal.ftp_server, goal.username, goal.password, goal.remote_path, goal.remote_folder, goal.local_path, True)
 
     	if self.cancelled:
                 self.result.success = False
