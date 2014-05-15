@@ -5,7 +5,7 @@ import os
 from sets import Set
 from ftplib import FTP
 
-def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath):
+def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath, deleteAfterUpload):
 	"""Connect to an FTP server and bring down files to a local directory"""
 
 	# open FTP connection, login and cd to the correct directory
@@ -14,12 +14,12 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 		ftp = FTP(serverName)
 	except:
 		print "Couldn't find server"
-		return
+		return False
 	try:
 		ftp.login(userName,passWord)
 	except: 
 		print 'Could not log in'
-		return
+		return False
 	try:
 		ftp.cwd(remotePath)
 	except:
@@ -28,7 +28,7 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 			ftp.cwd(remotePath)
 		except:
 			print 'Remote directory does not exist and it cannot be created.'
-			return
+			return False
 	# create remote directory, including subdirectories
 	index = 0
 	while  index != -1:
@@ -46,21 +46,23 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 				print 'Creating folder ',intFolder,' on server'
 			except:
 				print 'Cannot create remote folder'
-				return
+				return False
 		else: 
 			ftp.cwd(intFolder)
 
 	print "\n-- Uploading Files----\n"
-	uploadFolder(ftp,remotePath,remoteFolder,localPath)	
+	retVal = uploadFolder(ftp,remotePath,remoteFolder,localPath, deleteAfterUpload)	
+	print "\n-- Finished uploading ----\n"
+	return retVal
 
-def uploadFolder(ftp,remotePath,remoteFolder,localPath):
+def uploadFolder(ftp,remotePath,remoteFolder,localPath,deleteAfterUpload):
 	
 	# cd to the correct directory on the local system
 	try:
 		os.chdir(localPath)
 	except:
 		print 'Cannot cd to local path', localPath
-		return
+		return False
 	
 	localFiles = []
 	localDirs = []
@@ -79,6 +81,9 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 			files_copied+= 1			
 		except:	
 			print 'Could not upload file ',filename
+		if deleteAfterUpload:
+			print 'deleting file ', os.path.join(localPath, filename)
+			os.remove(os.path.join(localPath, filename))
 
 	print 'Uploaded ',files_copied,' out of ', len(localFiles), ' files from folder ',localPath
 
@@ -93,14 +98,19 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 				print 'Creating folder ',directory,' on server'
 			except:
 				print 'Cannot create remote folder'
-				return
+				return False
 		else: 
 			ftp.cwd(directory)
 		newRemotePath = remotePath+'/'+directory
 		newRemoteFolder = remoteFolder + '/'+directory
 		newLocalPath = localPath+'/'+directory
-		uploadFolder(ftp, newRemotePath, newRemoteFolder, newLocalPath)
+		uploadFolder(ftp, newRemotePath, newRemoteFolder, newLocalPath,deleteAfterUpload)
 		ftp.cwd('..')
+		if deleteAfterUpload:
+			print 'deleting folder ', newLocalPath
+			os.rmdir(newLocalPath)
+	
+	return True
 				
 
 if __name__ == '__main__':
