@@ -14,12 +14,12 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 		ftp = FTP(serverName)
 	except:
 		print "Couldn't find server"
-		return
+		return False
 	try:
 		ftp.login(userName,passWord)
 	except: 
 		print 'Could not log in'
-		return
+		return False
 	try:
 		ftp.cwd(remotePath)
 	except:
@@ -28,7 +28,7 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 			ftp.cwd(remotePath)
 		except:
 			print 'Remote directory does not exist and it cannot be created.'
-			return
+			return False
 	# create remote directory, including subdirectories
 	index = 0
 	while  index != -1:
@@ -46,12 +46,14 @@ def moveFTPFiles(serverName,userName,passWord,remotePath,remoteFolder,localPath)
 				print 'Creating folder ',intFolder,' on server'
 			except:
 				print 'Cannot create remote folder'
-				return
+				return False
 		else: 
 			ftp.cwd(intFolder)
 
 	print "\n-- Uploading Files----\n"
-	uploadFolder(ftp,remotePath,remoteFolder,localPath)	
+	retVal = uploadFolder(ftp,remotePath,remoteFolder,localPath)	
+	print "\n-- Finished uploading ----\n"
+	return retVal
 
 def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 	
@@ -60,7 +62,7 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 		os.chdir(localPath)
 	except:
 		print 'Cannot cd to local path', localPath
-		return
+		return False
 	
 	localFiles = []
 	localDirs = []
@@ -93,7 +95,7 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 				print 'Creating folder ',directory,' on server'
 			except:
 				print 'Cannot create remote folder'
-				return
+				return False
 		else: 
 			ftp.cwd(directory)
 		newRemotePath = remotePath+'/'+directory
@@ -101,6 +103,8 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath):
 		newLocalPath = localPath+'/'+directory
 		uploadFolder(ftp, newRemotePath, newRemoteFolder, newLocalPath)
 		ftp.cwd('..')
+	
+	return True
 				
 
 if __name__ == '__main__':

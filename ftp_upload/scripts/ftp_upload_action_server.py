@@ -6,6 +6,8 @@ import actionlib
 import math
 import time
 import ftp_upload.msg 
+from ftp_upload_script import moveFTPFiles
+
 
 class FTPUploadServer:
   def __init__(self):
@@ -27,12 +29,17 @@ class FTPUploadServer:
 
 	print 'Starting FTP upload to server ',goal.ftp_server
 
+	retVal = moveFTPFiles(goal.ftp_server, goal.username, goal.password, goal.remote_path, goal.remote_folder, goal.local_path)
+
     	if self.cancelled:
                 self.result.success = False
                 self.server.set_preempted(self.result)
 	else:
-                self.result.success = True
-                self.server.set_succeeded(self.result)
+                self.result.success = retVal		
+		if retVal:
+	                self.server.set_succeeded(self.result)
+		else:
+	                self.server.set_aborted(self.result)
 
 
   def preemptCallback(self):
