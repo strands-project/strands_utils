@@ -77,7 +77,7 @@ class NavGoalsGenerator():
             # subscribing to a map
             self.map_frame = rospy.get_param('~map_frame', '/map')
             rospy.loginfo("Sampling goals in %s", self.map_frame)
-            rospy.Subscriber(self.map_frame, OccupancyGrid, self.map_callback)
+            #rospy.Subscriber(self.map_frame, OccupancyGrid, self.map_callback)
 
             # setting up the service
             self.ser = rospy.Service('/nav_goals', NavGoals, self.nav_goals_service)
@@ -115,11 +115,19 @@ class NavGoalsGenerator():
             self.inflation_radius = req.inflation_radius
             self.roi = req.roi
 
+            res = NavGoalsResponse()
+
+            try:
+                msg = rospy.wait_for_message(self.map_frame, OccupancyGrid , timeout=10.0)
+                self.map_callback(msg)
+            except rospy.ROSException, e:
+                rospy.logwarn("Failed to get %s" % self.map_frame)
+                return res
+            
             # process arguments
             self.process_arguments()
 
             # generate response
-            res = NavGoalsResponse()
             res.goals.header.frame_id = '/map' # self.map_frame
             res.goals.poses = []
 
@@ -127,8 +135,11 @@ class NavGoalsGenerator():
             markerArray = MarkerArray()
 
             # generate random goal poses
-            while len(res.goals.poses) < self.n: 
-                        
+            # todo: learn upperbound
+            upperbound = self.n  * ( 2 +  self.inflation_radius / 0.01) 
+            count = 0 
+            while len(res.goals.poses) < self.n and count < upperbound: 
+                count += 1
                 cell_x = int(random.uniform(self.cell_min_x, self.cell_max_x))
                 cell_y = int(random.uniform(self.cell_min_y, self.cell_max_y))
 
