@@ -18,36 +18,37 @@ DataImage::DataImage(char *filename)
     if(!img) printf("Couldn't load the image");
     //else     printf("done\n");
 
+    CvRect rect1 = cvGetImageROI(img);
+    img1 = cvCreateImage(cvSize(rect1.width*2, rect1.height*2), IPL_DEPTH_8U, 1);
+
+    cvResize(img, img1, CV_INTER_LINEAR);
+
 
     //printf("Copiando Imagen Cv a Dmt\n");
-    pxl = (unsigned char *)malloc(img->imageSize);
+    pxl = (unsigned char *)malloc(img1->imageSize);
 
-    assert(pxl != NULL);    memcpy(pxl, img->imageData, img->imageSize);
+    assert(pxl != NULL);    memcpy(pxl, img1->imageData, img1->imageSize);
     //printf("bits pp = %d\n",img->depth);
 
 
     /* 3) DECODE the Data Matrix barcode from the copied image */
     // creo una nuova immagine grande come la roi !  // WIDTH E HEIGTH DEVONO ESSERE MULTIPLI DI 4 !!!!!!!!!!
 
-    CvRect rect = cvGetImageROI(img);   CvRect rectOriginal = cvGetImageROI(img);
+    CvRect rect = cvGetImageROI(img1);   CvRect rectOriginal = cvGetImageROI(img1);
 
 
     rect.width = ((rect.width) / 4) * 4; // approssima al multiplo inferiore
     rect.height = ((rect.height) / 4) * 4;
 
 
-    cvSetImageROI(img, rect);
+    cvSetImageROI(img1, rect);
 
-    img1 = cvCreateImage(cvSize(rect.width, rect.height), IPL_DEPTH_8U, 1);
+    img2 = cvCreateImage(cvSize(rect.width, rect.height), IPL_DEPTH_8U, 1);
 
-    cvConvertImage(img, img1, 0);
+    cvConvertImage(img1, img2, 0);
     //cvCopy(img, img2);
 
-    img2 = cvCreateImage(cvSize(rect.width*2, rect.height*2), IPL_DEPTH_8U, 1);
-
-    cvResize(img1, img2, CV_INTER_LINEAR);
-
-    cvSetImageROI(img, rectOriginal);
+    cvSetImageROI(img1, rectOriginal);
 
 
     //imgd = dmtxImageCreate(pxl, img->width, img->height, DmtxPack8bppK);
