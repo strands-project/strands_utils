@@ -15,7 +15,7 @@ class read_and_tweet(object):
     def __init__(self) :
         
         rospy.on_shutdown(self._on_node_shutdown)
-        rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback)
+        self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
               
         self.client.wait_for_server()
@@ -25,7 +25,9 @@ class read_and_tweet(object):
     def datamatrix_callback(self, msg) :
         dmtx_msg = msg.data
         if dmtx_msg == '0' :
-            self.img_subs = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.image_Callback)
+            self.msg_sub.unregister()
+            self.img_subs = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.image_callback,  queue_size=1)
+
             
 
     def image_callback(self, msg) :
@@ -39,7 +41,7 @@ class read_and_tweet(object):
         tweetgoal.with_photo = True
         
         tweetgoal.photo = msg
-        self.img_subs.unregister
+        self.img_subs.unregister()
         
         # Sends the goal to the action server.
         self.client.send_goal(tweetgoal)
@@ -51,6 +53,7 @@ class read_and_tweet(object):
         ps = self.client.get_result()  
         print ps
         sleep(10)
+        self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         
 
     def _on_node_shutdown(self):
@@ -61,3 +64,4 @@ class read_and_tweet(object):
 if __name__ == '__main__':
     rospy.init_node('read_and_tweet')
     ps = read_and_tweet()
+    rospy.spin()
