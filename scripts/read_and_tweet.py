@@ -5,6 +5,7 @@ import sys
 from time import sleep
 import actionlib
 import strands_tweets.msg
+import nhm.msg
 import cv2
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
@@ -20,6 +21,7 @@ class read_and_tweet(object):
         rospy.on_shutdown(self._on_node_shutdown)
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
+        self.click = actionlib.SimpleActionClient('twitter_effects', nhm.msg.TwitterEffectsAction)
         
         self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')              
         self.client.wait_for_server()
@@ -39,7 +41,7 @@ class read_and_tweet(object):
             
 
     def image_callback(self, msg) :
-            
+        clickgoal = nhm.msg.TwitterEffectsGoal()
         tweetgoal = strands_tweets.msg.SendTweetGoal()
         text = "Look who is here"
         print "tweeting %s" %text
@@ -51,6 +53,8 @@ class read_and_tweet(object):
         tweetgoal.photo = msg
         self.img_subs.unregister()
         
+        
+        self.click.send_goal(clickgoal)
         # Sends the goal to the action server.
         self.client.send_goal(tweetgoal)
     
