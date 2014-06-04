@@ -45,7 +45,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     std::vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
-    compression_params.push_back(99);
+    compression_params.push_back(100);
     cv::imwrite("/tmp/bridgeimage.jpg", cv_ptr->image, compression_params);
     char filen[100];
     sprintf(filen,"/tmp/bridgeimage.jpg");
@@ -84,7 +84,6 @@ int main(int argc, char *argv[])
 
   ros::init(argc, argv, "DataMatrix_Node");
   ros::NodeHandle dn;
-  ros::Rate loop_rate(2);
 
 
 
@@ -110,8 +109,7 @@ int main(int argc, char *argv[])
   while(ros::ok())
   {
     printf(". ");
-    ros::spinOnce();
-    loop_rate.sleep();
+    ros::spin();
   }
 
   printf("\n");
