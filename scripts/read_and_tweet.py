@@ -9,6 +9,9 @@ import cv2
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+import dynamic_reconfigure.client
+
+
 
 class read_and_tweet(object):
     
@@ -17,7 +20,8 @@ class read_and_tweet(object):
         rospy.on_shutdown(self._on_node_shutdown)
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
-              
+        
+        self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')              
         self.client.wait_for_server()
         rospy.loginfo(" ... Init done")
 
@@ -26,6 +30,10 @@ class read_and_tweet(object):
         dmtx_msg = msg.data
         if dmtx_msg == '0' :
             self.msg_sub.unregister()
+            config = self.rcnfclient.get_configuration()
+            self.mvx = config['max_vel_x']
+            params = { 'max_vel_x' : 0.0 }
+            config = self.rcnfclient.update_configuration(params)
             self.img_subs = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.image_callback,  queue_size=1)
 
             
@@ -54,6 +62,8 @@ class read_and_tweet(object):
         print ps
         sleep(10)
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
+        params = { 'max_vel_x' : self.mvx }
+        config = self.rcnfclient.update_configuration(params)
         
 
     def _on_node_shutdown(self):
