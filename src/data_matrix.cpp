@@ -84,14 +84,14 @@ int main(int argc, char *argv[])
 
   ros::init(argc, argv, "DataMatrix_Node");
   ros::NodeHandle dn;
-  ros::Rate loop_rate(1);
+  ros::Rate loop_rate(5);
 
 
 
   image_transport::ImageTransport it(dn);
   image_transport::Subscriber imsub = it.subscribe("/head_xtion/rgb/image_color", 1, imageCallback);
 
-  dtmtxmsg_pub = dn.advertise<std_msgs::String>("datamatrix/msg", 1);
+  dtmtxmsg_pub = dn.advertise<std_msgs::String>("/datamatrix/msg", 1);
 
 
 

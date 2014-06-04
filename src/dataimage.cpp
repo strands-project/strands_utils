@@ -11,17 +11,18 @@ DataImage::DataImage(char *filename)
     IplImage* img = 0;
 
 
-    printf("Cargando Imagen (%s)\n", filename);    img = cvLoadImage(filename, -1);
+    //printf("Cargando Imagen (%s)\n", filename);
+    img = cvLoadImage(filename, -1);
 
-    if(!img) printf("no se pudo cargar la imagen");
-    else     printf("Imagen Cargada\n");
+    if(!img) printf("Couldn't load the image");
+    else     printf("done\n");
 
 
-    printf("Copiando Imagen Cv a Dmt\n");
+    //printf("Copiando Imagen Cv a Dmt\n");
     pxl = (unsigned char *)malloc(img->imageSize);
 
     assert(pxl != NULL);    memcpy(pxl, img->imageData, img->imageSize);
-    printf("bits pp = %d\n",img->depth);
+    //printf("bits pp = %d\n",img->depth);
 
 
     /* 3) DECODE the Data Matrix barcode from the copied image */
@@ -62,7 +63,7 @@ void DataImage::decodificarImagen()
     DmtxRegion     *reg;
     DmtxMessage    *msg;
 
-    if(!cvSaveImage("JaipulImage.jpg", img2))   printf("No se pudo guardar la imagen\n");
+    if(!cvSaveImage("JaipulImage.jpg", img2))   printf("couldn't save image\n");
 
     dmtxImageSetProp(imgd, DmtxPropImageFlip, DmtxFlipNone);
 
@@ -92,12 +93,12 @@ void DataImage::decodificarImagen()
             //ROS_INFO("%s", dtmtxmsg.data.c_str());
 
 
-            printf("Resultado:\n %s \n",ss.data.c_str());
+            printf("Result:\n %s \n",ss.data.c_str());
             dmtxMessageDestroy(&msg);
         }
         else
         {
-            printf("No hay Mensaje\n");
+            printf("No Message\n");
         }
         dmtxRegionDestroy(&reg);
     }
