@@ -18,38 +18,38 @@ DataImage::DataImage(char *filename)
     if(!img) printf("Couldn't load the image");
     //else     printf("done\n");
 
-    CvRect rect1 = cvGetImageROI(img);
+    //CvRect rect1 = cvGetImageROI(img);
 
-    img1 = cvCreateImage(cvSize(rect1.width*2, rect1.height*2), img->depth, img->nChannels);
+    //img1 = cvCreateImage(cvSize(rect1.width*2, rect1.height*2), img->depth, img->nChannels);
 
-    cvResize(img, img1, cv::INTER_CUBIC);
+    //cvResize(img, img1, cv::INTER_CUBIC);
 
 
     //printf("Copiando Imagen Cv a Dmt\n");
-    pxl = (unsigned char *)malloc(img1->imageSize);
+    pxl = (unsigned char *)malloc(img->imageSize);
 
-    assert(pxl != NULL);    memcpy(pxl, img1->imageData, img1->imageSize);
+    assert(pxl != NULL);    memcpy(pxl, img->imageData, img->imageSize);
     //printf("bits pp = %d\n",img->depth);
 
 
     /* 3) DECODE the Data Matrix barcode from the copied image */
     // creo una nuova immagine grande come la roi !  // WIDTH E HEIGTH DEVONO ESSERE MULTIPLI DI 4 !!!!!!!!!!
 
-    CvRect rect = cvGetImageROI(img1);   CvRect rectOriginal = cvGetImageROI(img1);
+    CvRect rect = cvGetImageROI(img);   CvRect rectOriginal = cvGetImageROI(img);
 
 
     rect.width = ((rect.width) / 4) * 4; // approssima al multiplo inferiore
     rect.height = ((rect.height) / 4) * 4;
 
 
-    cvSetImageROI(img1, rect);
+    cvSetImageROI(img, rect);
 
     img2 = cvCreateImage(cvSize(rect.width, rect.height), IPL_DEPTH_8U, 1);
 
-    cvConvertImage(img1, img2, 0);
+    cvConvertImage(img, img2, 0);
     //cvCopy(img, img2);
 
-    cvSetImageROI(img1, rectOriginal);
+    cvSetImageROI(img, rectOriginal);
 
 
     //imgd = dmtxImageCreate(pxl, img->width, img->height, DmtxPack8bppK);

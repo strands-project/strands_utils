@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
   ros::init(argc, argv, "DataMatrix_Node");
   ros::NodeHandle dn;
-  ros::Rate loop_rate(5);
+  ros::Rate loop_rate(2);
 
 
 
