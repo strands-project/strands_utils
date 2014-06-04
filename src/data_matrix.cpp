@@ -46,9 +46,9 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
     std::vector<int> compression_params;
     compression_params.push_back(CV_IMWRITE_JPEG_QUALITY);
     compression_params.push_back(99);
-    cv::imwrite("bridgeimage.jpg", cv_ptr->image, compression_params);
+    cv::imwrite("/tmp/bridgeimage.jpg", cv_ptr->image, compression_params);
     char filen[100];
-    sprintf(filen,"bridgeimage.jpg");
+    sprintf(filen,"/tmp/bridgeimage.jpg");
     decimg = new DataImage(filen);
     decimg->decodificarImagen();
     std_msgs::String dtmtxmsg;

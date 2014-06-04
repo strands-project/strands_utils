@@ -9,13 +9,14 @@ DataImage::DataImage()
 DataImage::DataImage(char *filename)
 {
     IplImage* img = 0;
+    IplImage* img1;
 
 
     //printf("Cargando Imagen (%s)\n", filename);
     img = cvLoadImage(filename, -1);
 
     if(!img) printf("Couldn't load the image");
-    else     printf("done\n");
+    //else     printf("done\n");
 
 
     //printf("Copiando Imagen Cv a Dmt\n");
@@ -37,10 +38,14 @@ DataImage::DataImage(char *filename)
 
     cvSetImageROI(img, rect);
 
-    img2 = cvCreateImage(cvSize(rect.width, rect.height), IPL_DEPTH_8U, 1);
+    img1 = cvCreateImage(cvSize(rect.width, rect.height), IPL_DEPTH_8U, 1);
 
-    cvConvertImage(img, img2, 0);
+    cvConvertImage(img, img1, 0);
     //cvCopy(img, img2);
+
+    img2 = cvCreateImage(cvSize(rect.width*2, rect.height*2), IPL_DEPTH_8U, 1);
+
+    cvResize(img1, img2, CV_INTER_LINEAR);
 
     cvSetImageROI(img, rectOriginal);
 
@@ -63,7 +68,7 @@ void DataImage::decodificarImagen()
     DmtxRegion     *reg;
     DmtxMessage    *msg;
 
-    if(!cvSaveImage("JaipulImage.jpg", img2))   printf("couldn't save image\n");
+    if(!cvSaveImage("/tmp/JaipulImage.jpg", img2))   printf("couldn't save image\n");
 
     dmtxImageSetProp(imgd, DmtxPropImageFlip, DmtxFlipNone);
 
@@ -96,10 +101,10 @@ void DataImage::decodificarImagen()
             printf("Result:\n %s \n",ss.data.c_str());
             dmtxMessageDestroy(&msg);
         }
-        else
+        /*else
         {
             printf("No Message\n");
-        }
+        }*/
         dmtxRegionDestroy(&reg);
     }
     //printf("9\n");
