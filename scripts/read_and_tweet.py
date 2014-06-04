@@ -64,7 +64,7 @@ class read_and_tweet(object):
         # Prints out the result of executing the action
         ps = self.client.get_result()  
         print ps
-        sleep(10)
+        sleep(3)
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         params = { 'max_vel_x' : self.mvx }
         config = self.rcnfclient.update_configuration(params)
