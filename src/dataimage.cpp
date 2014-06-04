@@ -19,7 +19,8 @@ DataImage::DataImage(char *filename)
     //else     printf("done\n");
 
     CvRect rect1 = cvGetImageROI(img);
-    img1 = cvCreateImage(cvSize(rect1.width*2, rect1.height*2), img->depth, 1);
+
+    img1 = cvCreateImage(cvSize(rect1.width*2, rect1.height*2), img->depth, img->nChannels);
 
     cvResize(img, img1, CV_INTER_LINEAR);
 
