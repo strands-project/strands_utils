@@ -22,7 +22,7 @@ DataImage::DataImage(char *filename)
 
     img1 = cvCreateImage(cvSize(rect1.width*2, rect1.height*2), img->depth, img->nChannels);
 
-    cvResize(img, img1, CV_INTER_LINEAR);
+    cvResize(img, img1, cv::INTER_CUBIC);
 
 
     //printf("Copiando Imagen Cv a Dmt\n");
