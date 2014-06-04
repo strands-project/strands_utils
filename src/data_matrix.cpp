@@ -39,7 +39,7 @@ ros::Publisher dtmtxmsg_pub;
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
   cv_bridge::CvImagePtr cv_ptr;
-
+  printf("-");
   try
   {
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
