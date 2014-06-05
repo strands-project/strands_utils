@@ -44,9 +44,17 @@ class read_and_tweet(object):
         dmtx_msg = msg.data
         if dmtx_msg == '0' :
             self.msg_sub.unregister()
+            self.counter=5
+            t = Timer(1.0, self.time_callback)
+            t.start()
             config = self.rcnfclient.get_configuration()
             self.mvx = config['max_vel_x']
-            params = { 'max_vel_x' : 0.0 }
+            self.mtv = config['max_trans_vel']
+            self.mrv = config['max_rot_vel']
+            self.mix = config['min_vel_x']
+            self.mit = config['min_trans_vel']
+            self.mir = config['min_rot_vel']
+            params = {'max_vel_x' : 0.0, 'max_trans_vel':0.0, 'max_rot_vel':0.0, 'min_vel_x':0.0,'min_trans_vel':0.0, 'min_rot_vel':0.0 }
             config = self.rcnfclient.update_configuration(params)
             self.img_subs = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.image_callback,  queue_size=1)
 
@@ -84,8 +92,6 @@ class read_and_tweet(object):
         print ps
         sleep(3)
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
-        params = { 'max_vel_x' : self.mvx }
-        config = self.rcnfclient.update_configuration(params)
 
 
     def loadConfig(self, data_set) :
@@ -100,8 +106,20 @@ class read_and_tweet(object):
             return json.loads(message[0][0].data)        
 
 
+
+    def time_callback(self):
+        if self.counter > 0 and not self._killall_timers :
+            self.counter -= 1
+            t = Timer(1.0, self.time_callback)
+            t.start()
+        else :
+            params = { 'max_vel_x':self.mvx, 'max_trans_vel':self.mtv, 'max_rot_vel':self.mrv, 'min_vel_x':self.mix, 'min_trans_vel':self.mit, 'min_rot_vel':self.mir }
+            config = self.rcnfclient.update_configuration(params)
+            self.counter = 0
+
     def _on_node_shutdown(self):
         self.client.cancel_all_goals()
+        self._killall_timers=True
         #sleep(2)
 
 
