@@ -92,11 +92,11 @@ class read_and_tweet(object):
         msg_store = MessageStoreProxy(collection="hri_behaviours")
         query_meta = {}
         query_meta["nhm"] = data_set
-        if len(msg_store.query(std_msgs.msg.String._type, {}, query_meta)) == 0 :
+        if len(msg_store.query(String._type, {}, query_meta)) == 0 :
             rospy.logerr("Desired dialogue options '"+data_set+"' not in datacentre.")
             raise Exception("Can't find data in datacentre.")
         else:
-            message = msg_store.query(std_msgs.msg.String._type, {}, query_meta)
+            message = msg_store.query(String._type, {}, query_meta)
             return json.loads(message[0][0].data)        
 
 
