@@ -4,6 +4,11 @@ import rospy
 import sys
 from time import sleep
 import actionlib
+import json
+from random import randint
+
+
+from ros_datacentre.message_store import MessageStoreProxy
 import strands_tweets.msg
 import nhm.msg
 import cv2
@@ -16,12 +21,19 @@ import dynamic_reconfigure.client
 
 class read_and_tweet(object):
     
-    def __init__(self) :
+    def __init__(self, behaviour) :
         
         rospy.on_shutdown(self._on_node_shutdown)
+        self.b_config = loadConfig(behaviour)
+       
+        
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
         self.click = actionlib.SimpleActionClient('twitter_effects', nhm.msg.TwitterEffectsAction)
+        
+        self.photo_pub = rospy.Publisher('/nhm/twitter/image', Image, latch=True)
+        self.tw_pub = rospy.Publisher('/nhm/twitter/message', String, latch=True)
+
         
         self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')              
         self.client.wait_for_server()
@@ -43,9 +55,15 @@ class read_and_tweet(object):
     def image_callback(self, msg) :
         clickgoal = nhm.msg.TwitterEffectsGoal()
         tweetgoal = strands_tweets.msg.SendTweetGoal()
-        text = "Look who is here"
+        tweets = self.b_config["tweets"]["card"]
+        text = tweets[randint(0, len(tweets)-1)]
+        #text = "Look who is here"
         print "tweeting %s" %text
-    
+        
+        tweettext=String()
+        tweettext.data=text
+        self.tw_pub.publish(tweettext)
+        self.photo_pub.publish(msg)
         tweetgoal.text = text
         #navgoal.origin = orig
         tweetgoal.with_photo = True
@@ -68,14 +86,30 @@ class read_and_tweet(object):
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         params = { 'max_vel_x' : self.mvx }
         config = self.rcnfclient.update_configuration(params)
-        
+
+
+    def loadConfig(data_set):
+        msg_store = MessageStoreProxy(collection="hri_behaviours")
+        query_meta = {}
+        query_meta["nhm"] = data_set
+        if len(msg_store.query(std_msgs.msg.String._type, {}, query_meta)) == 0 :
+            rospy.logerr("Desired dialogue options '"+data_set+"' not in datacentre.")
+            raise Exception("Can't find data in datacentre.")
+        else:
+            message = msg_store.query(std_msgs.msg.String._type, {}, query_meta)
+            return json.loads(message[0][0].data)        
+
 
     def _on_node_shutdown(self):
         self.client.cancel_all_goals()
         #sleep(2)
 
 
+
 if __name__ == '__main__':
+    if len(sys.argv) < 4 :
+        print "usage: insert_map input_file.txt dataset_name map_name"
+        sys.exit(2)
     rospy.init_node('read_and_tweet')
-    ps = read_and_tweet()
+    ps = read_and_tweet(sys.argv[1])
     rospy.spin()
