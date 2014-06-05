@@ -24,7 +24,7 @@ class read_and_tweet(object):
     def __init__(self, behaviour) :
         
         rospy.on_shutdown(self._on_node_shutdown)
-        self.b_config = loadConfig(behaviour)
+        self.b_config = self.loadConfig(behaviour)
        
         
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
@@ -88,7 +88,7 @@ class read_and_tweet(object):
         config = self.rcnfclient.update_configuration(params)
 
 
-    def loadConfig(data_set):
+    def loadConfig(self, data_set) :
         msg_store = MessageStoreProxy(collection="hri_behaviours")
         query_meta = {}
         query_meta["nhm"] = data_set
