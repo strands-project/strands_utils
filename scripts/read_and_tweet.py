@@ -6,7 +6,7 @@ from time import sleep
 import actionlib
 import json
 from random import randint
-
+from threading import Timer
 
 from ros_datacentre.message_store import MessageStoreProxy
 import strands_tweets.msg
@@ -26,21 +26,22 @@ class read_and_tweet(object):
         
         rospy.on_shutdown(self._on_node_shutdown)
         self.b_config = self.loadConfig(behaviour)
+        self._killall_timers=False
        
         
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
         self.click = actionlib.SimpleActionClient('twitter_effects', nhm.msg.TwitterEffectsAction)
         self.brandclient = actionlib.SimpleActionClient('/image_branding', qr_read_and_tweet.msg.ImageBrandingAction)
-
-        
+        self.tmppageClient = actionlib.SimpleActionClient('/webloader/tmppage', nhm.msg.WebloaderTmpPageAction)
+          
         self.tw_pub = rospy.Publisher('/nhm/twitter/message', String, latch=True)
-
+        self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')
         
-        self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')              
         self.client.wait_for_server()
         self.brandclient.wait_for_server()
         self.click.wait_for_server()
+        self.tmppageClient.wait_for_server()
         rospy.loginfo(" ... Init done")
 
 
@@ -68,22 +69,24 @@ class read_and_tweet(object):
         clickgoal = nhm.msg.TwitterEffectsGoal()
         tweetgoal = strands_tweets.msg.SendTweetGoal()
         brandgoal = qr_read_and_tweet.msg.ImageBrandingGoal()
+
+        self.img_subs.unregister()        
+        
         tweets = self.b_config["tweets"]["card"]
         text = tweets[randint(0, len(tweets)-1)]
         #text = "Look who is here"
         print "tweeting %s" %text
-        self.img_subs.unregister()
+      
+
+        brandgoal.photo = msg
+        self.brandclient.send_goal(brandgoal)
+        self.brandclient.wait_for_result()
+        br_ph = self.brandclient.get_result()  
 
 
         tweettext=String()
         tweettext.data=text
         self.tw_pub.publish(tweettext)
-        
-
-        brandgoal.photo = msg
-        self.client.send_goal(brandgoal)
-        self.client.wait_for_result()
-        br_ph = self.client.get_result()  
 
 
         tweetgoal.text = text
@@ -97,6 +100,9 @@ class read_and_tweet(object):
         self.client.wait_for_result()
         ps = self.client.get_result()  
         print ps
+        
+        self.loadTmpPage(True, 'nhm-twitter.html', 15)
+        
         sleep(3)
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
 
@@ -112,6 +118,15 @@ class read_and_tweet(object):
             message = msg_store.query(String._type, {}, query_meta)
             return json.loads(message[0][0].data)        
 
+
+
+    # Create page with a timeout in seconds
+    def loadTmpPage(self, relative, page, timeout):
+        goal = nhm.msg.WebloaderTmpPageGoal()
+        goal.relative = relative
+        goal.page = page
+        goal.timeout = timeout
+        self.tmppageClient.send_goal(goal)
 
 
     def time_callback(self):
@@ -132,7 +147,7 @@ class read_and_tweet(object):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 4 :
+    if len(sys.argv) < 2 :
         print "usage: insert_map input_file.txt dataset_name map_name"
         sys.exit(2)
     rospy.init_node('read_and_tweet')
