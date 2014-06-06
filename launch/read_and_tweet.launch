@@ -4,7 +4,7 @@
 	<arg name="user" default="strands" />
 	<arg name="behaviour" default="blah" />
 
-	<machine name="$(arg machine)" address="$(arg machine)" env-loader="/opt/strands/strands_catkin_ws/devel/env.sh" user="$(arg user)" default="true"/>
+	<machine name="$(arg machine)" address="$(arg machine)" env-loader="/localhome/cdondrup/ros_ws/catkin_ws/devel/env.sh" user="$(arg user)" default="true"/>
 
 	<node pkg="qr_read_and_tweet" name="data_matrix_node" type="data_matrix_node" output="screen"/>
 	<node pkg="qr_read_and_tweet" name="image_branding" type="image_branding.py" output="screen" />
