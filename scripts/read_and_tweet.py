@@ -10,6 +10,7 @@ from random import randint
 
 from ros_datacentre.message_store import MessageStoreProxy
 import strands_tweets.msg
+import qr_read_and_tweet.msg
 import nhm.msg
 import cv2
 from std_msgs.msg import String
@@ -30,13 +31,16 @@ class read_and_tweet(object):
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
         self.click = actionlib.SimpleActionClient('twitter_effects', nhm.msg.TwitterEffectsAction)
+        self.brandclient = actionlib.SimpleActionClient('/image_branding', qr_read_and_tweet.msg.ImageBrandingAction)
+
         
-        self.photo_pub = rospy.Publisher('/nhm/twitter/image', Image, latch=True)
         self.tw_pub = rospy.Publisher('/nhm/twitter/message', String, latch=True)
 
         
         self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')              
         self.client.wait_for_server()
+        self.brandclient.wait_for_server()
+        self.click.wait_for_server()
         rospy.loginfo(" ... Init done")
 
 
@@ -63,31 +67,34 @@ class read_and_tweet(object):
     def image_callback(self, msg) :
         clickgoal = nhm.msg.TwitterEffectsGoal()
         tweetgoal = strands_tweets.msg.SendTweetGoal()
+        brandgoal = qr_read_and_tweet.msg.ImageBrandingGoal()
         tweets = self.b_config["tweets"]["card"]
         text = tweets[randint(0, len(tweets)-1)]
         #text = "Look who is here"
         print "tweeting %s" %text
-        
+        self.img_subs.unregister()
+
+
         tweettext=String()
         tweettext.data=text
         self.tw_pub.publish(tweettext)
-        self.photo_pub.publish(msg)
-        tweetgoal.text = text
-        #navgoal.origin = orig
-        tweetgoal.with_photo = True
         
-        tweetgoal.photo = msg
-        self.img_subs.unregister()
+
+        brandgoal.photo = msg
+        self.client.send_goal(brandgoal)
+        self.client.wait_for_result()
+        br_ph = self.client.get_result()  
+
+
+        tweetgoal.text = text
+        tweetgoal.with_photo = True
+        tweetgoal.photo = br_ph.branded_image
         
         
         self.click.send_goal(clickgoal)
-        # Sends the goal to the action server.
         self.client.send_goal(tweetgoal)
     
-        # Waits for the server to finish performing the action.
         self.client.wait_for_result()
-    
-        # Prints out the result of executing the action
         ps = self.client.get_result()  
         print ps
         sleep(3)
