@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 
   while(ros::ok())
   {
-    printf(". ");
+    //printf(". ");
     ros::spin();
   }
 
