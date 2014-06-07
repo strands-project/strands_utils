@@ -17,39 +17,37 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import dynamic_reconfigure.client
-
+import nhm.srv
 
 
 class read_and_tweet(object):
-    
-    def __init__(self, behaviour) :
-        
+
+    def __init__(self, behaviour):
+
         rospy.on_shutdown(self._on_node_shutdown)
         self.b_config = self.loadConfig(behaviour)
-        self._killall_timers=False
-       
-        
+        self._killall_timers = False
+
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
         self.click = actionlib.SimpleActionClient('twitter_effects', nhm.msg.TwitterEffectsAction)
         self.brandclient = actionlib.SimpleActionClient('/image_branding', qr_read_and_tweet.msg.ImageBrandingAction)
         self.tmppageClient = actionlib.SimpleActionClient('/webloader/tmppage', nhm.msg.WebloaderTmpPageAction)
-          
+
         self.tw_pub = rospy.Publisher('/nhm/twitter/message', String, latch=True)
         self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')
-        
+
         self.client.wait_for_server()
         self.brandclient.wait_for_server()
         self.click.wait_for_server()
         self.tmppageClient.wait_for_server()
         rospy.loginfo(" ... Init done")
 
-
-    def datamatrix_callback(self, msg) :
+    def datamatrix_callback(self, msg):
         dmtx_msg = msg.data
-        if dmtx_msg == '0' :
+        if dmtx_msg == '0':
             self.msg_sub.unregister()
-            self.counter=5
+            self.counter = 5
             t = Timer(1.0, self.time_callback)
             t.start()
             config = self.rcnfclient.get_configuration()
@@ -62,26 +60,52 @@ class read_and_tweet(object):
             params = {'max_vel_x' : 0.0, 'max_trans_vel':0.0, 'max_rot_vel':0.0, 'min_vel_x':0.0,'min_trans_vel':0.0, 'min_rot_vel':0.0 }
             config = self.rcnfclient.update_configuration(params)
             self.img_subs = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.image_callback,  queue_size=1)
+        elif dmtx_msg == '1':
+            clickgoal = nhm.msg.TwitterEffectsGoal()
+            rospy.wait_for_service('/nhm/smach/wait')
+            try:
+                s = rospy.ServiceProxy('/nhm/smach/wait', nhm.srv.Wait)
+                s(True)
+                self.click.send_goal(clickgoal)
+            except rospy.ServiceException, e:
+                print "Service call failed: %s" % e
+        elif dmtx_msg == '2':
+            clickgoal = nhm.msg.TwitterEffectsGoal()
+            rospy.wait_for_service('/nhm/smach/wait')
+            try:
+                s = rospy.ServiceProxy('/nhm/smach/wait', nhm.srv.Wait)
+                s(False)
+                self.click.send_goal(clickgoal)
+            except rospy.ServiceException, e:
+                print "Service call failed: %s" % e
+        elif dmtx_msg == '5':
+            clickgoal = nhm.msg.TwitterEffectsGoal()
+            rospy.wait_for_service('/nhm/smach/patrol')
+            try:
+                s = rospy.ServiceProxy('/nhm/smach/patrol', nhm.srv.Patrol)
+                s(True)
+                self.click.send_goal(clickgoal)
+            except rospy.ServiceException, e:
+                print "Service call failed: %s" % e
 
-            
 
     def image_callback(self, msg) :
         clickgoal = nhm.msg.TwitterEffectsGoal()
         tweetgoal = strands_tweets.msg.SendTweetGoal()
         brandgoal = qr_read_and_tweet.msg.ImageBrandingGoal()
 
-        self.img_subs.unregister()        
-        
+        self.img_subs.unregister()
+
         tweets = self.b_config["tweets"]["card"]
         text = tweets[randint(0, len(tweets)-1)]
         #text = "Look who is here"
         print "tweeting %s" %text
-      
+
 
         brandgoal.photo = msg
         self.brandclient.send_goal(brandgoal)
         self.brandclient.wait_for_result()
-        br_ph = self.brandclient.get_result()  
+        br_ph = self.brandclient.get_result()
 
 
         tweettext=String()
@@ -92,17 +116,17 @@ class read_and_tweet(object):
         tweetgoal.text = text
         tweetgoal.with_photo = True
         tweetgoal.photo = br_ph.branded_image
-        
-        
+
+
         self.click.send_goal(clickgoal)
         self.client.send_goal(tweetgoal)
-    
+
         self.client.wait_for_result()
-        ps = self.client.get_result()  
+        ps = self.client.get_result()
         print ps
-        
+
         self.loadTmpPage(True, 'nhm-twitter.html', 15)
-        
+
         sleep(3)
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
 
@@ -116,7 +140,7 @@ class read_and_tweet(object):
             raise Exception("Can't find data in datacentre.")
         else:
             message = msg_store.query(String._type, {}, query_meta)
-            return json.loads(message[0][0].data)        
+            return json.loads(message[0][0].data)
 
 
 
