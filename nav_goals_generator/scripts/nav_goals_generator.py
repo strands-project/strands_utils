@@ -75,8 +75,10 @@ class NavGoalsGenerator():
             rospy.loginfo("Started nav_goals_generator service")
 
             # subscribing to a map
-            self.map_frame = rospy.get_param('~map_frame', '/map')
+            self.map_frame = rospy.get_param('~map', '/map')
             rospy.loginfo("Sampling goals in %s", self.map_frame)
+            self.is_costmap = rospy.get_param('~is_costmap', 'false')
+            
             #rospy.Subscriber(self.map_frame, OccupancyGrid, self.map_callback)
 
             # setting up the service
@@ -284,15 +286,21 @@ class NavGoalsGenerator():
             return is_inside(p, self.roi.points)
         
         def in_collision(self,x,y):
-                x_min = x - self.inflated_footprint_size
-                x_max = x + self.inflated_footprint_size                    
-                y_min = y - self.inflated_footprint_size
-                y_max = y + self.inflated_footprint_size                    
-                for i in range(x_min,x_max):
-                        for j in range(y_min,y_max):
-                                if (self.cell(i,j) != 0):
-                                        return True
+
+            if self.is_costmap:
+                if (self.cell(x,y) != 0):
+                    return True
                 return False
+            
+            x_min = x - self.inflated_footprint_size
+            x_max = x + self.inflated_footprint_size                    
+            y_min = y - self.inflated_footprint_size
+            y_max = y + self.inflated_footprint_size                    
+            for i in range(x_min,x_max):
+                for j in range(y_min,y_max):
+                    if (self.cell(i,j) != 0):
+                        return True
+            return False
                         
 
 if __name__ == '__main__':
