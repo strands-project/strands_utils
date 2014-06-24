@@ -77,7 +77,7 @@ def uploadFolder(ftp,remotePath,remoteFolder,localPath,deleteAfterUpload):
 	for filename in localFiles:
 		try:
 			print 'Uploading file ', filename, ' to server'
-			ftp.storlines('STOR ' + filename, open(filename, 'r'))
+			ftp.storbinary('STOR ' + filename, open(filename, 'rb'))
 			files_copied+= 1			
 		except:	
 			print 'Could not upload file ',filename
