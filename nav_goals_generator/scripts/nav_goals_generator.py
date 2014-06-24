@@ -75,7 +75,7 @@ class NavGoalsGenerator():
             rospy.loginfo("Started nav_goals_generator service")
 
             # subscribing to a map
-            self.map_frame = rospy.get_param('~map', '/map')
+            self.map_frame = rospy.get_param('~map_frame', '/map')
             rospy.loginfo("Sampling goals in %s", self.map_frame)
             self.is_costmap = rospy.get_param('~is_costmap', 'false')
             
