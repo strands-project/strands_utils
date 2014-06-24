@@ -15,8 +15,16 @@ published on a topic, e.g. `/map`. Second, launch the service as follows:
 ```
 roslaunch nav_goal_generation nav_goal_generation.launch
 ```
+The default map is `/map`. It can be overwritten by passing an argument as follows:
+```
+roslaunch nav_goal_generation nav_goal_generation.launch map:=/projected_map
+```
+If the map argument is a costmap, you should also set the flag `is_costmap` to `true`. Then the inflation radius in the service call is ignored (a costmap is already inflated)
+```
+roslaunch nav_goal_generation nav_goal_generation.launch map:=/move_base/global_costmap/costmap  is_costmap:=true
 
-You can send now a service request:
+```
+You can send a service request as follows:
 
 ```
 rosservice call /nav_goals '{n: 100, inflation_radius: 0.5, roi: {points: [[0,0,0],[2,-2,0],[-2,-2,0]]}}'
