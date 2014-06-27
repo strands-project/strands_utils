@@ -4,23 +4,27 @@ import rospy
 import actionlib
 from wait_action.msg import *
 from datetime import *
-from std_srvs.srv import Empty
+from std_srvs.srv import Empty, EmptyResponse
 
 class WaitServer:
-    def __init__(self): 
-        self.end_wait_srv = rospy.Service('/wait_action/end_wait', Empty, self.end_wait) 
+    def __init__(self):         
         self.server = actionlib.SimpleActionServer('wait_action', WaitAction, self.execute, False) 
         self.server.start()
 
 
 
     def end_wait(self, req):
-        rospy.loginfo("Preempting sleep")
+        
         if self.server.is_active():
+            rospy.loginfo("Preempting sleep")
+            self.server.preempt_request = True
             self.server.set_preempted()
+        return EmptyResponse()
 
     def execute(self, goal):
         # rospy.loginfo("waiting: %s" % goal) 
+
+        end_wait_srv = rospy.Service('/wait_action/end_wait', Empty, self.end_wait) 
 
         now = rospy.get_rostime()
         target = goal.wait_until
@@ -54,6 +58,10 @@ class WaitServer:
             r.sleep()
 
         rospy.loginfo("waited until: %s" % datetime.fromtimestamp(rospy.get_rostime().secs))
+
+
+
+        end_wait_srv.shutdown()
 
         if self.server.is_preempt_requested():
             self.server.set_preempted()
