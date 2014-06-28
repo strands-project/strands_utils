@@ -14,7 +14,7 @@
     <arg name="max_height" default="0.0"/>
 
     <!-- Launch the primitive extraction -->
-	<node pkg="primitive_extraction" type="extraction" name="extraction" output="screen">
+	<node pkg="primitive_extraction" type="extraction" name="plane_extraction" output="screen">
 	    <!-- The min and max height between which to extract, 0 for no bounds -->
 	    <param name="min_height" type="double" value="$(arg min_height)"/>
 	    <param name="max_height" type="double" value="$(arg max_height)"/>
