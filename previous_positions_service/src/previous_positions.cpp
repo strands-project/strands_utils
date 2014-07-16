@@ -48,7 +48,13 @@ int main(int argc, char** argv)
 	ros::NodeHandle n;
 	ros::ServiceServer service = n.advertiseService("previous_position", &service_callback);
 	ros::Subscriber sub = n.subscribe("/robot_pose", 1, &callback);
-	ros::spin();
+	
+	//ros::spin();
+	ros::Rate rate(10);
+	while (n.ok()) {
+	    rate.sleep();
+	    ros::spinOnce();
+	}
 	
     return 0;
 }
