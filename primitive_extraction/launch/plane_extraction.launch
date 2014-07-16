@@ -2,7 +2,7 @@
 <launch>
 
     <!-- The topic of the input cloud to segment into primitives -->
-    <arg name="cloud" default="/cloud_pcd"/>
+    <arg name="cloud" default="/local_metric_map/merged_point_cloud"/>
     <!-- The topic to publish the resulting found primitives on -->
     <arg name="primitive_topic" default="/plane_extraction/primitives"/>
     <!-- Choose which types of primitives to extract -->
