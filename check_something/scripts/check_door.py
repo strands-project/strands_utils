@@ -5,7 +5,7 @@ from check_something.checker import Checker
 from strands_navigation_msgs.msg import *
 from actionlib_msgs.msg import GoalStatus
 from ros_mary_tts.msg import *
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 from robblog.msg import RobblogEntry
 from sensor_msgs.msg import Image
 
