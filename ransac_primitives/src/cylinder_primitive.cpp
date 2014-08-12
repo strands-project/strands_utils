@@ -98,9 +98,8 @@ void cylinder_primitive::largest_connected_component(std::vector<int>& inliers, 
     Vector3d pt;
     Vector2d rad;
     Vector2i pt2;
-    std::vector<int> temp;
-    std::vector<Vector2i, aligned_allocator<Eigen::Vector2i> > plane_pts;
-    plane_pts.resize(conforming_inds.size());
+    std::vector<Vector2i, aligned_allocator<Eigen::Vector2i> > pts;
+    pts.resize(conforming_inds.size());
     int counter = 0;
     for (const int& i : conforming_inds) {
         pt = points.col(i);
@@ -113,8 +112,7 @@ void cylinder_primitive::largest_connected_component(std::vector<int>& inliers, 
         if (pt2(0) > maxpt(0)) {
             maxpt(0) = pt2(0);
         }
-        temp.push_back(i);
-        plane_pts[counter] = pt2;
+        pts[counter] = pt2;
         ++counter;
     }
 
@@ -129,7 +127,7 @@ void cylinder_primitive::largest_connected_component(std::vector<int>& inliers, 
     cv::Mat binary = cv::Mat::zeros(height, width, CV_32SC1);
     //cv::Mat binary0 = cv::Mat::zeros(height, width, CV_32SC1);
 
-    for (Vector2i& pp : plane_pts) {
+    for (Vector2i& pp : pts) {
         pp -= minpt;
         binary.at<int>(pp(1), pp(0)) = 1;
         //binary0.at<int>(pp(1), pp(0)) = 65535;
@@ -141,10 +139,10 @@ void cylinder_primitive::largest_connected_component(std::vector<int>& inliers, 
     cv::Mat support = cv::Mat::zeros(width, height, CV_8UC1);
     //cv::Mat binary2 = cv::Mat::zeros(height, width, CV_32SC1);
 
-    inliers.reserve(temp.size());
+    inliers.reserve(pts.size());
     int largest = find_blobs(binary, true);
     counter = 0;
-    for (const Vector2i& pp : plane_pts) {
+    for (const Vector2i& pp : pts) {
         if (binary.at<int>(pp(1), pp(0)) == largest) {
             inliers.push_back(conforming_inds[counter]);
             support.at<unsigned char>(pp(0), pp(1)) = 1;
@@ -159,7 +157,7 @@ void cylinder_primitive::largest_connected_component(std::vector<int>& inliers, 
     cv::reduce(support, row_support, 0, CV_REDUCE_SUM, CV_32SC1);
     int nonzero = cv::countNonZero(row_support);
 
-    if (inlier_refinement == 1 && double(nonzero)/double(height) < 0.3) { // make this a parameter
+    if (inlier_refinement == 1 && double(nonzero)/double(height) < 0.4) { // make this a parameter
         inliers.clear();
         return;
     }
