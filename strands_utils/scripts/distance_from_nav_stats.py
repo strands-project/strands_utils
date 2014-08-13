@@ -5,7 +5,7 @@ import math
 import sys
 import argparse
 
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 from strands_navigation_msgs.msg import NavStatistics, TopologicalNode
 from datetime import datetime, timedelta
 

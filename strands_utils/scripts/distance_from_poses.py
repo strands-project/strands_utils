@@ -5,7 +5,7 @@ import math
 import sys
 import argparse
 
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from datetime import datetime
 
