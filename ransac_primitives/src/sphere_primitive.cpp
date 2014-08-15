@@ -111,18 +111,11 @@ bool sphere_primitive::construct(const MatrixXd& points, const MatrixXd& normals
 void sphere_primitive::compute_inliers(std::vector<int>& inliers, const MatrixXd& points, const MatrixXd& normals,
                                        const std::vector<int>& inds, double inlier_threshold, double angle_threshold)
 {
-    Vector2d min2;
-    min2 << -r*M_PI/2.0, -r*M_PI/2.0;
-    Vector2d max2;
-    max2 << r*M_PI/2.0, r*M_PI/2.0;
-
     // check for inliers to primitive
     Vector3d pt;
     Vector3d n;
     Vector3d rad;
     double rad_norm;
-    std::vector<int> temp;
-    std::vector<Vector3d, aligned_allocator<Eigen::Vector3d> > sphere_pts;
     double cos_threshold = cos(angle_threshold);
     for (const int& i : inds) {
         pt = points.col(i);
@@ -132,83 +125,59 @@ void sphere_primitive::compute_inliers(std::vector<int>& inliers, const MatrixXd
         rad *= 1.0/rad_norm;
         if (fabs(n.dot(rad)) > cos_threshold &&
                 fabs(rad_norm - r) < inlier_threshold) {
-            //std::cout << "Inlier!" << std::endl;
-            sphere_pts.push_back(rad);
-            temp.push_back(i);
+            inliers.push_back(i);
         }
     }
+}
 
-    if (inlier_refinement == 1 && int(temp.size()) < min_inliers) {
-        return;
-    }
+void sphere_primitive::largest_connected_component(std::vector<int>& inliers, const MatrixXd& points)
+{
+    Vector2i minpt;
+    minpt << int(-r*M_PI/2.0/current_connectedness_res()), int(-r*M_PI/2.0/current_connectedness_res());
+    Vector2i maxpt;
+    maxpt << int(r*M_PI/2.0/current_connectedness_res()), int(r*M_PI/2.0/current_connectedness_res());
 
-    Vector2d size2 = max2 - min2;
-    int width = int(ceil(size2(0)/connectedness_res));
-    int height = int(ceil(size2(1)/connectedness_res));
+    int width = 1 + maxpt(0) - minpt(0);
+    int height = 1 + maxpt(1) - minpt(1);
+
     cv::Mat binary = cv::Mat::zeros(2*height, width, CV_32SC1);
-    cv::Mat binary1 = cv::Mat::zeros(2*height, width, CV_32SC1);
+    //cv::Mat binary0 = cv::Mat::zeros(2*height, width, CV_32SC1);
 
-    // check for largest connected components
-    std::vector<Vector2i, aligned_allocator<Eigen::Vector2i> > sphere_ptsi;
-    sphere_ptsi.resize(sphere_pts.size());
-
-    int counter = 0;
-    Vector2d pt2;
+    // check for inliers to primitive
+    Vector2d pt;
     Vector2i pt2i;
-    /*int minx = 10000;
-    int miny = 10000;
-    int maxx = -1;
-    int maxy = -1;*/
-    for (const Vector3d& pt3 : sphere_pts) {
-        bool isupper = sphere_to_grid(pt2, pt3);
-        pt2i(0) = int((pt2(0) - min2(0))/connectedness_res);
-        pt2i(1) = int((pt2(1) - min2(1))/connectedness_res);
+    Vector3d rad;
+    double rad_norm;
+    std::vector<Vector2i, aligned_allocator<Vector2i> > pts;
+    pts.resize(conforming_inds.size());
+    int counter = 0;
+    for (const int& i : conforming_inds) {
+        rad = points.col(i) - c;
+        rad_norm = rad.norm();
+        rad *= 1.0/rad_norm;
+        bool isupper = sphere_to_grid(pt, rad);
+        pt2i = (1.0/current_connectedness_res()*pt).cast<int>() - minpt;
         if (isupper) {
             pt2i(1) += height;
         }
-
-        /*if (pt2i(0) < minx) {
-            minx = pt2i(0);
-        }
-        if (pt2i(1) < miny) {
-            miny = pt2i(1);
-        }
-        if (pt2i(0) > maxx) {
-            maxx = pt2i(0);
-        }
-        if (pt2i(1) > maxy) {
-            maxy = pt2i(1);
-        }*/
-
-        //std::cout << pt2i.transpose() << std::endl;
-        //std::cout << width << ", " << 2*height << std::endl;
+        pts[counter] = pt2i;
         binary.at<int>(pt2i(1), pt2i(0)) = 1;
-        binary1.at<int>(pt2i(1), pt2i(0)) = 65535;
-        sphere_ptsi[counter] = pt2i;
+        //binary0.at<int>(pt2i(1), pt2i(0)) = 65535;
         ++counter;
     }
 
-    /*if (maxx >= width || maxy >= 2*height || minx < 0 || miny < 0) {
-        std::cout << "width: " << width << std::endl;
-        std::cout << "height: " << height << std::endl;
-        std::cout << "maxx: " << maxx << std::endl;
-        std::cout << "minx: " << minx << std::endl;
-        std::cout << "maxy: " << maxy << std::endl;
-        std::cout << "miny: " << miny << std::endl;
-        exit(0);
-    }*/
-
-    //cv::imshow("Binary1", binary1);
+    //cv::imshow("Binary0", binary0);
     //cv::waitKey(0);
-    cv::Mat binary2 = cv::Mat::zeros(2*height, width, CV_32SC1);
 
-    inliers.reserve(temp.size());
+    //cv::Mat binary2 = cv::Mat::zeros(2*height, width, CV_32SC1);
+
+    inliers.reserve(pts.size());
     int largest = find_blobs(binary, true, true);
     counter = 0;
-    for (const Vector2i& pp : sphere_ptsi) {
+    for (const Vector2i& pp : pts) {
         if (binary.at<int>(pp(1), pp(0)) == largest) {
-            inliers.push_back(temp[counter]);
-            binary2.at<int>(pp(1), pp(0)) = 65535;
+            inliers.push_back(conforming_inds[counter]);
+            //binary2.at<int>(pp(1), pp(0)) = 65535;
         }
         ++counter;
     }
@@ -286,9 +255,4 @@ void sphere_primitive::shape_data(VectorXd& data)
 void sphere_primitive::shape_points(std::vector<Vector3d, aligned_allocator<Vector3d> >& points)
 {
     points.clear();
-}
-
-void sphere_primitive::largest_connected_component(std::vector<int>& inliers, const MatrixXd& points)
-{
-
 }

@@ -15,8 +15,6 @@ private:
     Eigen::Matrix<double, 3, 2> basis;
     double max_radius;
     static int cylinders_drawn;
-    Eigen::Vector2d min2;
-    Eigen::Vector2d max2;
 public:
     bool construct(const Eigen::MatrixXd& points, const Eigen::MatrixXd& normals,
                    double inlier_threshold, double angle_threshold);

@@ -263,6 +263,7 @@ void plane_primitive::largest_connected_component(std::vector<int>& inliers, con
 
     if (width < 10 || height < 10) {
         inliers = conforming_inds;
+        return;
     }
 
     cv::Mat binary = cv::Mat::zeros(height, width, CV_32SC1);
