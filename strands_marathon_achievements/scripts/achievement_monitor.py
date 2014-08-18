@@ -90,8 +90,8 @@ def create_test_val(achievement_type, episode):
 
 if __name__ == '__main__':
 	rospy.init_node("achievement_monitor")
-	host = rospy.get_param("datacentre_host") 
-	port = rospy.get_param("datacentre_port")
+	host = rospy.get_param("mongodb_host") 
+	port = rospy.get_param("mongodb_port")
 
 	gen = log_util.StatGenerator(host, port) 
 	client = pymongo.MongoClient(host, port) 
