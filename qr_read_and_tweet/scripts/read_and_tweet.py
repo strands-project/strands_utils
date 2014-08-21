@@ -8,10 +8,11 @@ import json
 from random import randint
 from threading import Timer
 
-from ros_datacentre.message_store import MessageStoreProxy
+from mongodb_store.message_store import MessageStoreProxy
 import strands_tweets.msg
 import qr_read_and_tweet.msg
-import nhm.msg
+from fake_camera_effects.msg import CameraEffectsAction, CameraEffectsGoal
+from strands_webserver.msg import WebloaderTmpPageAction, WebloaderTmpPageGoal
 import cv2
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
@@ -30,9 +31,9 @@ class read_and_tweet(object):
 
         self.msg_sub = rospy.Subscriber('/datamatrix/msg', String, self.datamatrix_callback, queue_size=1)
         self.client = actionlib.SimpleActionClient('strands_tweets', strands_tweets.msg.SendTweetAction)
-        self.click = actionlib.SimpleActionClient('twitter_effects', nhm.msg.TwitterEffectsAction)
+        self.click = actionlib.SimpleActionClient('camera_effects', CameraEffectsAction)
         self.brandclient = actionlib.SimpleActionClient('/image_branding', qr_read_and_tweet.msg.ImageBrandingAction)
-        self.tmppageClient = actionlib.SimpleActionClient('/webloader/tmppage', nhm.msg.WebloaderTmpPageAction)
+        self.tmppageClient = actionlib.SimpleActionClient('/webloader/tmppage', WebloaderTmpPageAction)
 
         self.tw_pub = rospy.Publisher('/nhm/twitter/message', String, latch=True)
         self.rcnfclient = dynamic_reconfigure.client.Client('/move_base/DWAPlannerROS')
@@ -61,7 +62,7 @@ class read_and_tweet(object):
             config = self.rcnfclient.update_configuration(params)
             self.img_subs = rospy.Subscriber('/head_xtion/rgb/image_color', Image, self.image_callback,  queue_size=1)
         elif dmtx_msg == '1':
-            clickgoal = nhm.msg.TwitterEffectsGoal()
+            clickgoal = CameraEffectsGoal()
             rospy.wait_for_service('/nhm/smach/wait')
             try:
                 s = rospy.ServiceProxy('/nhm/smach/wait', nhm.srv.Wait)
@@ -70,7 +71,7 @@ class read_and_tweet(object):
             except rospy.ServiceException, e:
                 print "Service call failed: %s" % e
         elif dmtx_msg == '2':
-            clickgoal = nhm.msg.TwitterEffectsGoal()
+            clickgoal = CameraEffectsGoal()
             rospy.wait_for_service('/nhm/smach/wait')
             try:
                 s = rospy.ServiceProxy('/nhm/smach/wait', nhm.srv.Wait)
@@ -79,7 +80,7 @@ class read_and_tweet(object):
             except rospy.ServiceException, e:
                 print "Service call failed: %s" % e
         elif dmtx_msg == '5':
-            clickgoal = nhm.msg.TwitterEffectsGoal()
+            clickgoal = CameraEffectsGoal()
             rospy.wait_for_service('/nhm/smach/patrol')
             try:
                 s = rospy.ServiceProxy('/nhm/smach/patrol', nhm.srv.Patrol)
@@ -90,7 +91,7 @@ class read_and_tweet(object):
 
 
     def image_callback(self, msg) :
-        clickgoal = nhm.msg.TwitterEffectsGoal()
+        clickgoal = CameraEffectsGoal()
         tweetgoal = strands_tweets.msg.SendTweetGoal()
         brandgoal = qr_read_and_tweet.msg.ImageBrandingGoal()
 
@@ -146,7 +147,7 @@ class read_and_tweet(object):
 
     # Create page with a timeout in seconds
     def loadTmpPage(self, relative, page, timeout):
-        goal = nhm.msg.WebloaderTmpPageGoal()
+        goal = WebloaderTmpPageGoal()
         goal.relative = relative
         goal.page = page
         goal.timeout = timeout
