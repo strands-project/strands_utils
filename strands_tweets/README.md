@@ -22,11 +22,17 @@ or, with easy_install
 
 
   * Go to ` https://dev.twitter.com/apps ` and register an application
+  * If the application is registered, hit the ` Test OAuth `. Skip the two following steps.
   * Go to the settings tab and chage permitions to ` Read, Write and Access direct messages `
   * Go back to the Details tab and at the botton hit the ` Create Access Token Button `
-  * Go to OAuth tool tab and get the <strong>Consumer key</strong>, <strong>Consumer secret</strong>, <strong>Access token</strong> and <strong>Access token secret</strong> and save them on `/opt/strands/strands_catkin_ws/src/strands_utils/mongodb_store/defaults/twitter_params.yaml`
+  * Go to OAuth tool tab and get the <strong>Consumer key</strong>, <strong>Consumer secret</strong>, <strong>Access token</strong> and <strong>Access token secret</strong> and save them on `/opt/strands/strands_catkin_ws/src/strands_deployment/strands_parameters/defaults/twitter_params.yaml` with the format as follows:
+        twitter:
+            appKey: '<ConsumerKey>'
+            appSecret: '<ConsumerSecret>'
+            oauthToken: '<AccessToken>'
+            oauthTokenSecret: '<AccessTokenSecret>'
   * Launch the mongodb_store: 
-  ``` roslaunch mongodb_store datacentre.launch```
+  ``` roslaunch mongodb_store mongodb_store.launch```
   * Save the parameters on your locals collection:
 
   ```rosservice call /config_manager/save_param /twitter/appKey```
