@@ -27,7 +27,11 @@ public:
     int get_inliers() { return supporting_inds.size(); }
     // use the octree for this also, since they are all from one node... can do that as a previous step
     bool are_contained(const std::vector<int>& other_inds);
-    int find_blobs(cv::Mat& label_image, bool wrap_height = false, bool wrap_sides = false);
+    static int find_blobs(cv::Mat& label_image, bool wrap_height = false, bool wrap_sides = false);
+    static int find_next_point(const Eigen::Vector3d& q, const Eigen::Vector2d& c,
+                               const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> >& p, std::vector<int>& used);
+    static void convex_hull(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> >& res, const Eigen::Vector3d& c,
+                            const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> >& p);
     void circle_to_grid(Eigen::Vector2d& rtn, const Eigen::Vector2d onDisk);
     double current_connectedness_res();
     // output the indices in the point cloud contained in the primitive

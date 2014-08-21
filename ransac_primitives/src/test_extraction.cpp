@@ -8,7 +8,6 @@
 #include "sphere_primitive.h"
 #include "cylinder_primitive.h"
 
-
 #include <pcl/features/normal_3d.h>
 
 int main(int argc, char** argv)

@@ -349,3 +349,71 @@ void plane_primitive::shape_points(std::vector<Vector3d, aligned_allocator<Vecto
 {
     points = convex_hull;
 }
+
+void plane_primitive::merge_planes(plane_primitive& other1, plane_primitive& other2) // make methods like shape_points const so that the pars can be const
+{
+    // project the points into a common coordinate system, maybe the camera plane?
+    Vector3d v_p, v_q;
+    Vector3d c_p, c_q;
+    other1.direction_and_center(v_p, c_p); // should really be the rotation instead
+    other2.direction_and_center(v_q, c_q);
+    c = 0.5*(c_p + c_q);
+    Vector3d v;
+    if (v_p.dot(v_q) > 0) {
+        v = v_p + v_q;
+    }
+    else {
+        v = v_p - v_q;
+    }
+    v.normalize();
+    double d = -v.dot(c);
+
+    // just pick the basis of the first one
+    VectorXd data;
+    other1.shape_data(data);
+    Quaterniond q_p(data(12), data(9), data(10), data(11));
+    Matrix3d R_p(q_p);
+    Matrix3d R;
+    R.col(0) = v;
+    R.col(1) = R_p.col(1) - v.dot(R_p.col(1))*v;
+    R.col(1).normalize();
+    R.col(2) = v.cross(R.col(1));
+    R.col(2).normalize();
+
+    // get convex hull of p and q: P, Q
+    std::vector<Vector3d, aligned_allocator<Vector3d> > hull1;
+    std::vector<Vector3d, aligned_allocator<Vector3d> > hull2;
+    other1.shape_points(hull1);
+    other2.shape_points(hull2);
+    std::vector<Vector3d, aligned_allocator<Vector3d> > points = hull1;
+    points.insert(points.end(), hull2.begin(), hull2.end());
+
+    for (Vector3d& point : points) {
+        point = R.transpose()*point;
+    }
+
+    Vector3d mean(0.0, 0.0, 0.0);
+    std::for_each(points.begin(), points.end(), [&](const Vector3d& pp) { mean += pp; });
+    mean /= double(points.size());
+    std::vector<Vector3d, aligned_allocator<Vector3d> > hull;
+    base_primitive::convex_hull(hull, mean, points);
+
+    for (Vector3d& point : hull) {
+        double dist = v.dot(R*point) + d;
+        point(0) -= dist;
+        point = R*point;
+    }
+
+    // now we have hull, rotation, center, par, need more? size? supporting_inds!
+    quat = Quaterniond(R);
+    basis = R.block<3, 2>(0, 1); // doesn't really correspond but isn't needed anymore
+    convex_hull = hull;
+    p.segment<3>(0) = v;
+    p(3) = d;
+    red = other1.red;
+    green = other1.green;
+    blue = other1.blue;
+    supporting_inds = other1.supporting_inds;
+    supporting_inds.insert(supporting_inds.end(), other2.supporting_inds.begin(), other2.supporting_inds.end());
+    // TODO: fill in the sizes using smallest enclosing box!
+}
