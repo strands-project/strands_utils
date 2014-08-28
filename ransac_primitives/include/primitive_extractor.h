@@ -17,8 +17,10 @@ public:
     typedef typename cloud_type::Ptr cloud_ptr;
     typedef typename cloud_type::ConstPtr cloud_const_ptr;
     typedef primitive_octree<point_type> octree_type;
-private:
+protected:
     cloud_ptr cloud; // pcl formats
+    primitive_params params; // the parameters of the algorithm, from primitive_params.h
+private:
     pcl::PointCloud<pcl::Normal>::Ptr cloud_normals;
     Eigen::MatrixXd mpoints; // points of cloud
     Eigen::MatrixXd mnormals; // normals of point cloud
@@ -32,8 +34,6 @@ private:
     std::vector<int> total_set_size; // the cumulative sum of number of points in the octrees
 
     std::vector<base_primitive*>& primitives; // primitive types used
-
-    primitive_params params; // the parameters of the algorithm, from primitive_params.h
 
     primitive_visualizer<point_type>* vis; // tool for visualizing the progression
 
