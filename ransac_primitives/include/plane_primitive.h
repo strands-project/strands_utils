@@ -18,6 +18,7 @@ protected:
     void find_smallest_enclosing_box(Eigen::Vector2d& cmin, Eigen::Matrix2d& axes,
                                      Eigen::Vector2d& lengths, std::vector<cv::Point>& pts);
 public:
+    void switch_direction();
     void merge_planes(plane_primitive& other1, plane_primitive& other2);
     bool construct(const Eigen::MatrixXd& points, const Eigen::MatrixXd& normals,
                    double inlier_threshold, double angle_threshold);

@@ -23,6 +23,11 @@ bool plane_primitive::construct(const MatrixXd& points, const MatrixXd& normals,
     Vector3d second = points.col(2) - points.col(0);
     Vector3d normal = first.cross(second);
     normal.normalize();
+    // MAKE THE NORMAL DIRECTION MATTER
+    if (normal.dot(normals.col(0)) < 0) {
+        normal *= -1.0;
+    }
+    // MAKE THE NORMAL DIRECTION MATTER
     p.segment<3>(0) = normal;
     p(3) = -normal.dot(points.col(0));
 
@@ -32,7 +37,7 @@ bool plane_primitive::construct(const MatrixXd& points, const MatrixXd& normals,
 
     // check if normals agree with computed plane normal
     for (int i = 0; i < 3; ++i) {
-        if (acos(fabs(normal.dot(normals.col(i)))) > angle_threshold) {
+        if (acos(normal.dot(normals.col(i))) > angle_threshold) {
             return false;
         }
     }
@@ -220,11 +225,14 @@ void plane_primitive::compute_inliers(std::vector<int>& inliers, const MatrixXd&
     Vector3d pt;
     Vector3d n;
     double cos_threshold = cos(angle_threshold);
+    double d = p(3);
+    Vector3d v = p.segment<3>(0);
     for (const int& i : inds) {
         pt = points.col(i);
         n = normals.col(i);
-        if (fabs(pt.dot(p.segment<3>(0)) + p(3)) < inlier_threshold &&
-                fabs(n.dot(p.segment<3>(0))) > cos_threshold) {
+        if (fabs(pt.dot(v) + d) < inlier_threshold &&
+                n.dot(v) > cos_threshold) { // just removing the absolute value should do the trick
+            //fabs(n.dot(p.segment<3>(0))) > cos_threshold) {
             inliers.push_back(i);
         }
     }
@@ -317,12 +325,13 @@ double plane_primitive::distance_to_pt(const Vector3d& pt)
 
 void plane_primitive::direction_and_center(Eigen::Vector3d& direction, Eigen::Vector3d& center)
 {
-    if (p(2) > 0) {
+    /*if (p(2) > 0) {
         direction = -p.segment<3>(0);
     }
     else {
         direction = p.segment<3>(0);
-    }
+    }*/
+    direction = p.segment<3>(0);
     center = c;
 }
 
@@ -415,5 +424,16 @@ void plane_primitive::merge_planes(plane_primitive& other1, plane_primitive& oth
     blue = other1.blue;
     supporting_inds = other1.supporting_inds;
     supporting_inds.insert(supporting_inds.end(), other2.supporting_inds.begin(), other2.supporting_inds.end());
+    std::sort(supporting_inds.begin(), supporting_inds.end());
     // TODO: fill in the sizes using smallest enclosing box!
+}
+
+void plane_primitive::switch_direction()
+{
+    p = -p;
+    Matrix3d RR(quat);
+    AngleAxisd aa(M_PI, RR.col(1));
+    quat = aa*quat;
+    basis.col(0) = aa*basis.col(0);
+    basis.col(1) = aa*basis.col(1);
 }

@@ -58,6 +58,48 @@ primitive_extractor<Point>::primitive_extractor(cloud_ptr new_cloud,
     }
 }
 
+template <typename Point>
+primitive_extractor<Point>::primitive_extractor(cloud_ptr new_cloud, pcl::PointCloud<pcl::Normal>::Ptr cloud_normals,
+                                                std::vector<base_primitive*>& primitives,
+                                                primitive_params params, primitive_visualizer<point_type>* vis) :
+    cloud(new cloud_type()), cloud_normals(new pcl::PointCloud<pcl::Normal>(*cloud_normals)),
+    octree(params.octree_res), primitives(primitives), params(params), vis(vis)
+{
+    // setup parameters
+    base_primitive::number_disjoint_subsets = params.number_disjoint_subsets;
+    base_primitive::min_inliers = params.inlier_min;
+    base_primitive::connectedness_res = params.connectedness_res;
+
+    // seed the random number generator
+    srand(time(NULL));
+
+    // create the point cloud from the points that are close enough
+    remove_distant_points(new_cloud, params.distance_threshold);
+
+    // initialize clouds and matrices
+    octree.setInputCloud(cloud);
+    octree.addPointsFromInputCloud();
+    tree_depth = octree.getTreeDepth() + 1;
+    level_scores.resize(tree_depth);
+    level_scores.setZero();
+    construct_octrees();
+
+    if (PRINTOUTS) {
+        std::cout << "Octree constructed, tree depth: " << tree_depth << std::endl;
+    }
+
+    mpoints.resize(3, cloud->size());
+    mnormals.resize(3, cloud->size());
+
+    Vector3f point;
+    for (size_t i = 0; i < cloud->size(); ++i) {
+        point = cloud->points[i].getVector3fMap();
+        mpoints.col(i) = point.cast<double>();
+        mnormals.col(i) = cloud_normals->points[i].getNormalVector3fMap().cast<double>();
+        mnormals.col(i).normalize();
+    }
+}
+
 // setup the disjoint subsets
 template <typename Point>
 void primitive_extractor<Point>::construct_octrees()
@@ -206,7 +248,7 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
                     continue;
                 }
                 candidates.push_back(c);
-                level_scores(level) += c->supporting_inds.size(); // TODO: this must be expected value instead
+                level_scores(level) += level + 1;//c->supporting_inds.size(); // TODO: this must be expected value instead
                 // should this get updated when intervals are refined? should be easy
             }
             else {
@@ -451,11 +493,11 @@ template <typename Point>
 int primitive_extractor<Point>::sample_level(int iteration)
 {
     ArrayXd pdf;
-    if (level_scores(0) < 200000) {
+    if (level_scores(0) < 1000) {//200000) {
         pdf.resize(tree_depth);
         //return rand() % tree_depth; // sample with prob 1/d instead
         for (int j = 0; j < tree_depth; ++j) {
-            pdf(j) = 1.0/(1.0 + double(j));
+            pdf(j) = 1.0;//(1.0 + double(j));
         }
         pdf /= pdf.sum();
     }

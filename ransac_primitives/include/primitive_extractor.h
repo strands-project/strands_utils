@@ -20,10 +20,10 @@ public:
 protected:
     cloud_ptr cloud; // pcl formats
     primitive_params params; // the parameters of the algorithm, from primitive_params.h
-private:
     pcl::PointCloud<pcl::Normal>::Ptr cloud_normals;
     Eigen::MatrixXd mpoints; // points of cloud
     Eigen::MatrixXd mnormals; // normals of point cloud
+private:
     octree_type octree; // octree used for the entire cloud
     int tree_depth; // the levels of the octree
     Eigen::ArrayXi level_scores; // the sum of the number of primitives at each level of the octree
@@ -59,6 +59,10 @@ public:
     pcl::PointCloud<pcl::Normal>::ConstPtr get_normals();
     cloud_const_ptr get_cloud();
     primitive_extractor(cloud_ptr cloud,
+                        std::vector<base_primitive*>& primitives,
+                        primitive_params params = primitive_params(),
+                        primitive_visualizer<point_type>* vis = NULL);
+    primitive_extractor(cloud_ptr cloud, pcl::PointCloud<pcl::Normal>::Ptr cloud_normals,
                         std::vector<base_primitive*>& primitives,
                         primitive_params params = primitive_params(),
                         primitive_visualizer<point_type>* vis = NULL);
