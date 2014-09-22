@@ -2,7 +2,7 @@
 import rospy
 import actionlib
 from check_something.checker import Checker
-from strands_navigation_msgs.msg import *
+from scitos_door_pass.msg import *
 from actionlib_msgs.msg import GoalStatus
 from ros_mary_tts.msg import *
 from mongodb_store.message_store import MessageStoreProxy
@@ -10,7 +10,7 @@ from robblog.msg import RobblogEntry
 from sensor_msgs.msg import Image
 
 class DoorChecker(Checker):
-    def __init__(self): 
+    def __init__(self):
         super( DoorChecker, self ).__init__('check_door', 'doorDetection', DoorCheckAction)
         self.speech_client = None
         # Used to create some blog entries
@@ -31,7 +31,7 @@ class DoorChecker(Checker):
 
         rospy.loginfo(text)
 
-        
+
     def img_callback(self, img):
         self.last_image = img
 
@@ -63,7 +63,7 @@ class DoorChecker(Checker):
 
         self.blog_msg_store.insert(e)
 
-    def generate_report(self, state, result):   
+    def generate_report(self, state, result):
 
 
         if state == GoalStatus.SUCCEEDED:
@@ -72,13 +72,13 @@ class DoorChecker(Checker):
             else:
                 self.speak("I think the door is closed")
             self.generate_post(result.open)
-        else:   
+        else:
             rospy.loginfo("Action interrupted or aborted")
 
 
 if __name__ == '__main__':
     rospy.init_node("door_checker")
-    checker = DoorChecker()  
+    checker = DoorChecker()
     rospy.spin()
 
-   
+
