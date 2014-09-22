@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   rospy
   strands_navigation_msgs
-  scitos_door_pass
+  door_pass
 )
 
 ## System dependencies are found with CMake's conventions
