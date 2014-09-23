@@ -2,7 +2,7 @@
 import rospy
 import actionlib
 from check_something.checker import Checker
-from scitos_door_pass.msg import *
+from door_pass.msg import *
 from actionlib_msgs.msg import GoalStatus
 from ros_mary_tts.msg import *
 from mongodb_store.message_store import MessageStoreProxy
