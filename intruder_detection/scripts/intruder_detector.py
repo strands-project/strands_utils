@@ -4,7 +4,7 @@
 import rospy
 import actionlib
 import intruder_detection.msg
-import strands_perception_people_msgs.msg
+import strands_pedestrian_tracking.msg
 
 
 class IntruderDetection(object):
@@ -31,7 +31,7 @@ class IntruderDetection(object):
 
         rospy.Subscriber(
             "/pedestrian_tracking/pedestrian_array",
-            strands_perception_people_msgs.msg.PedestrianTrackingArray,
+            strands_pedestrian_tracking.msg.PedestrianTrackingArray,
             self.callback
         )
 
