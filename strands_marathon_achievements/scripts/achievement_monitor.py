@@ -4,7 +4,7 @@ import roslib
 import rospy
 import pymongo
 import strands_tweets.srv
-import ros_mary_tts.srv 
+import mary_tts.srv 
 from  waypoint_patroller import log_util
 
         # self.start_time = None
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
 	speak_achievements = rospy.get_param("~speak_achievements", False)
 	if speak_achievements:
-		speech_service = rospy.ServiceProxy('/ros_mary', ros_mary_tts.srv.ros_mary)  
+		speech_service = rospy.ServiceProxy('/ros_mary', mary_tts.srv.ros_mary)  
 
 
 	rate = rospy.Rate(1./360) # in hz -- summary is only updated every 5 minutes 

@@ -4,7 +4,7 @@ import actionlib
 from check_something.checker import Checker
 from door_pass.msg import *
 from actionlib_msgs.msg import GoalStatus
-from ros_mary_tts.msg import *
+from mary_tts.msg import *
 from mongodb_store.message_store import MessageStoreProxy
 from robblog.msg import RobblogEntry
 from sensor_msgs.msg import Image
