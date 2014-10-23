@@ -8,7 +8,7 @@ If you want to tweet your announcements, you must have the `tweets.py` node runn
 
 ## Speech
 
-If you want to speak your announcements, you must have the `ros_mary.launch` file running from `ros_mary_tts`. This is detailed in its [README](https://github.com/strands-project/strands_hri/blob/master/ros_mary_tts/README.md).
+If you want to speak your announcements, you must have the `ros_mary.launch` file running from `mary_tts`. This is detailed in its [README](https://github.com/strands-project/strands_hri/blob/master/mary_tts/README.md).
 
 ## Usage
 
@@ -23,7 +23,7 @@ rosparam get achievements
 
 Next run the nodes you want to use to communicate to the world. If you want speech, and haven't run Mary already (e.g. it's included in the current patroller launch file) do:
 ```
-roslaunch ros_mary_tts ros_mary.launch
+roslaunch mary_tts ros_mary.launch
 ```
 If you want Twitter announcements do:
 ```
