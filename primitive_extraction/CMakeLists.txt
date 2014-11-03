@@ -113,8 +113,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-
-
 ## Declare a cpp library
 # add_library(primitive_extraction
 #   src/${PROJECT_NAME}/primitive_extraction.cpp
@@ -156,20 +154,16 @@ target_link_libraries(primitives_to_markers
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS primitive_extraction primitive_extraction_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-
+install(TARGETS extraction primitives_to_markers
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
 
 #############
 ## Testing ##

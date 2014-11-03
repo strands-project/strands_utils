@@ -21,7 +21,7 @@ catkin_package(
    INCLUDE_DIRS include
    LIBRARIES primitive_core primitive_shapes
    CATKIN_DEPENDS 
-   DEPENDS OpenCV PCL 
+   DEPENDS OpenCV PCL
 )
 
 set(CORE_HEADERS
@@ -38,6 +38,12 @@ target_link_libraries(primitive_core ${OpenCV_LIBS} ${PCL_LIBRARIES})
 target_link_libraries(primitive_shapes primitive_core)
 target_link_libraries(test_extraction primitive_shapes primitive_core ${PCL_LIBRARIES})
 
+## Mark executables and/or libraries for installation
+install(TARGETS primitive_core primitive_shapes test_extraction
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
