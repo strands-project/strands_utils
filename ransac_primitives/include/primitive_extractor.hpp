@@ -208,11 +208,16 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
     double prob_not_found = 1.0;
     std::vector<int> inds;
     int iteration = 0;
+    int find_valid_tries = 0;
     do {
         // pick one point from entire cloud
         int ind = rand() % n; // change to work for clouds > RAND_MAX
         if (isnan(cloud->points[ind].x) || isnan(cloud->points[ind].y) || isnan(cloud->points[ind].z)) {
             continue;
+        }
+        if (find_valid_tries > 10000) {
+            std::cout << "Can't find a valid shape, done..." << std::endl;
+            break;
         }
 
         // random tree depth, sample more points from that depth at point
@@ -260,8 +265,10 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
         // no candidates -> can't do anything
         if (candidates.size() == 0) {
             ++iteration;
+            ++find_valid_tries;
             continue;
         }
+        find_valid_tries = 0;
 
         int rounds = 0;
         std::vector<base_primitive*> best_candidates = candidates;
@@ -335,7 +342,7 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
         }
         ++iteration;
     }
-    while (prob_not_found > params.add_threshold);
+    while (prob_not_found > params.add_threshold && octree.size() > params.min_shape);
 
     // min_set because that will be the most unlikely shape
     clear_primitives(candidates);
