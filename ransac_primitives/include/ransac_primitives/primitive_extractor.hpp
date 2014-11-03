@@ -253,7 +253,7 @@ void primitive_extractor<Point>::extract(std::vector<base_primitive*>& extracted
                     continue;
                 }
                 candidates.push_back(c);
-                level_scores(level) += level + 1;//c->supporting_inds.size(); // TODO: this must be expected value instead
+                level_scores(level) += c->supporting_inds.size(); // TODO: this must be expected value instead
                 // should this get updated when intervals are refined? should be easy
             }
             else {
@@ -500,7 +500,7 @@ template <typename Point>
 int primitive_extractor<Point>::sample_level(int iteration)
 {
     ArrayXd pdf;
-    if (level_scores(0) < 1000) {//200000) {
+    if (level_scores(0) < 200000) {
         pdf.resize(tree_depth);
         //return rand() % tree_depth; // sample with prob 1/d instead
         for (int j = 0; j < tree_depth; ++j) {
