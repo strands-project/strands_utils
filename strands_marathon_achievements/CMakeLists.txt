@@ -6,7 +6,7 @@ project(strands_marathon_achievements)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   ap_msgs
-  ros_datacentre
+  mongodb_store
   waypoint_patroller
 )
 
@@ -82,7 +82,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES strands_marathon_achievements
-#  CATKIN_DEPENDS ap_msgs ros_datacentre waypoint_patroller
+#  CATKIN_DEPENDS ap_msgs mongodb_store waypoint_patroller
 #  DEPENDS system_lib
 )
 

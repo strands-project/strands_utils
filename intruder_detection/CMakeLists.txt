@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   rospy
   std_msgs
-  strands_perception_people_msgs
+  mdl_people_tracker
 )
 
 ## System dependencies are found with CMake's conventions
@@ -86,7 +86,7 @@ add_action_files(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES intruder_detection
-#  CATKIN_DEPENDS actionlib actionlib_msgs genmsg message_generation rospy std_msgs strands_perception_people_msgs
+#  CATKIN_DEPENDS actionlib actionlib_msgs genmsg message_generation rospy std_msgs mdl_people_tracker
 #  DEPENDS system_lib
 )
 
