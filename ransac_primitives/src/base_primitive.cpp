@@ -273,8 +273,8 @@ void base_primitive::convex_hull(std::vector<Vector3d, aligned_allocator<Vector3
     std::vector<int> used;
     used.resize(p.size(), 0);
 
-    int first_ind;
-    int previous_ind;
+    int first_ind = 0;
+    int previous_ind = 0;
     for (size_t i = 0; i < p.size(); ++i) {
         int ind = find_next_point(p[i], c.tail<2>(), p, used);
         if (ind != -1) {
