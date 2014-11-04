@@ -8,7 +8,6 @@
 #include "ransac_primitives/sphere_primitive.h"
 #include "ransac_primitives/cylinder_primitive.h"
 
-
 #include <pcl/features/normal_3d.h>
 
 int main(int argc, char** argv)

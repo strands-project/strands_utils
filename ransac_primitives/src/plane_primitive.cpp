@@ -23,6 +23,11 @@ bool plane_primitive::construct(const MatrixXd& points, const MatrixXd& normals,
     Vector3d second = points.col(2) - points.col(0);
     Vector3d normal = first.cross(second);
     normal.normalize();
+    // MAKE THE NORMAL DIRECTION MATTER
+    if (normal.dot(normals.col(0)) < 0) {
+        normal *= -1.0;
+    }
+    // MAKE THE NORMAL DIRECTION MATTER
     p.segment<3>(0) = normal;
     p(3) = -normal.dot(points.col(0));
 
@@ -32,7 +37,7 @@ bool plane_primitive::construct(const MatrixXd& points, const MatrixXd& normals,
 
     // check if normals agree with computed plane normal
     for (int i = 0; i < 3; ++i) {
-        if (acos(fabs(normal.dot(normals.col(i)))) > angle_threshold) {
+        if (acos(normal.dot(normals.col(i))) > angle_threshold) {
             return false;
         }
     }
@@ -220,11 +225,14 @@ void plane_primitive::compute_inliers(std::vector<int>& inliers, const MatrixXd&
     Vector3d pt;
     Vector3d n;
     double cos_threshold = cos(angle_threshold);
+    double d = p(3);
+    Vector3d v = p.segment<3>(0);
     for (const int& i : inds) {
         pt = points.col(i);
         n = normals.col(i);
-        if (fabs(pt.dot(p.segment<3>(0)) + p(3)) < inlier_threshold &&
-                fabs(n.dot(p.segment<3>(0))) > cos_threshold) {
+        if (fabs(pt.dot(v) + d) < inlier_threshold &&
+                n.dot(v) > cos_threshold) { // just removing the absolute value should do the trick
+            //fabs(n.dot(p.segment<3>(0))) > cos_threshold) {
             inliers.push_back(i);
         }
     }
@@ -317,12 +325,13 @@ double plane_primitive::distance_to_pt(const Vector3d& pt)
 
 void plane_primitive::direction_and_center(Eigen::Vector3d& direction, Eigen::Vector3d& center)
 {
-    if (p(2) > 0) {
+    /*if (p(2) > 0) {
         direction = -p.segment<3>(0);
     }
     else {
         direction = p.segment<3>(0);
-    }
+    }*/
+    direction = p.segment<3>(0);
     center = c;
 }
 
@@ -348,4 +357,83 @@ void plane_primitive::shape_data(VectorXd& data)
 void plane_primitive::shape_points(std::vector<Vector3d, aligned_allocator<Vector3d> >& points)
 {
     points = convex_hull;
+}
+
+void plane_primitive::merge_planes(plane_primitive& other1, plane_primitive& other2) // make methods like shape_points const so that the pars can be const
+{
+    // project the points into a common coordinate system, maybe the camera plane?
+    Vector3d v_p, v_q;
+    Vector3d c_p, c_q;
+    other1.direction_and_center(v_p, c_p); // should really be the rotation instead
+    other2.direction_and_center(v_q, c_q);
+    c = 0.5*(c_p + c_q);
+    Vector3d v;
+    if (v_p.dot(v_q) > 0) {
+        v = v_p + v_q;
+    }
+    else {
+        v = v_p - v_q;
+    }
+    v.normalize();
+    double d = -v.dot(c);
+
+    // just pick the basis of the first one
+    VectorXd data;
+    other1.shape_data(data);
+    Quaterniond q_p(data(12), data(9), data(10), data(11));
+    Matrix3d R_p(q_p);
+    Matrix3d R;
+    R.col(0) = v;
+    R.col(1) = R_p.col(1) - v.dot(R_p.col(1))*v;
+    R.col(1).normalize();
+    R.col(2) = v.cross(R.col(1));
+    R.col(2).normalize();
+
+    // get convex hull of p and q: P, Q
+    std::vector<Vector3d, aligned_allocator<Vector3d> > hull1;
+    std::vector<Vector3d, aligned_allocator<Vector3d> > hull2;
+    other1.shape_points(hull1);
+    other2.shape_points(hull2);
+    std::vector<Vector3d, aligned_allocator<Vector3d> > points = hull1;
+    points.insert(points.end(), hull2.begin(), hull2.end());
+
+    for (Vector3d& point : points) {
+        point = R.transpose()*point;
+    }
+
+    Vector3d mean(0.0, 0.0, 0.0);
+    std::for_each(points.begin(), points.end(), [&](const Vector3d& pp) { mean += pp; });
+    mean /= double(points.size());
+    std::vector<Vector3d, aligned_allocator<Vector3d> > hull;
+    base_primitive::convex_hull(hull, mean, points);
+
+    for (Vector3d& point : hull) {
+        double dist = v.dot(R*point) + d;
+        point(0) -= dist;
+        point = R*point;
+    }
+
+    // now we have hull, rotation, center, par, need more? size? supporting_inds!
+    quat = Quaterniond(R);
+    basis = R.block<3, 2>(0, 1); // doesn't really correspond but isn't needed anymore
+    convex_hull = hull;
+    p.segment<3>(0) = v;
+    p(3) = d;
+    red = other1.red;
+    green = other1.green;
+    blue = other1.blue;
+    supporting_inds = other1.supporting_inds;
+    supporting_inds.insert(supporting_inds.end(), other2.supporting_inds.begin(), other2.supporting_inds.end());
+    std::sort(supporting_inds.begin(), supporting_inds.end());
+    // TODO: fill in the sizes using smallest enclosing box!
+}
+
+void plane_primitive::switch_direction()
+{
+    p = -p;
+    Matrix3d RR(quat);
+    AngleAxisd aa(M_PI, RR.col(1));
+    quat = aa*quat;
+    basis.col(0) = aa*basis.col(0);
+    basis.col(1) = aa*basis.col(1);
 }

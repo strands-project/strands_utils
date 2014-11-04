@@ -98,6 +98,7 @@ bool base_primitive::are_contained(const std::vector<int>& other_inds)
 
 // extract the largest connected component from an image,
 // optionally connected through the sides
+// should be static
 int base_primitive::find_blobs(cv::Mat& label_image, bool wrap_height, bool wrap_sides)
 {
     // Fill the label_image with the blobs
@@ -223,5 +224,73 @@ void base_primitive::write_indices_to_stream(std::ostream& o)
 {
     for (const int& ind : supporting_inds) {
         o << ind << " ";
+    }
+}
+
+int base_primitive::find_next_point(const Vector3d& q, const Vector2d& c,
+                                    const std::vector<Vector3d, aligned_allocator<Vector3d> >& p, std::vector<int>& used)
+{
+    Vector2d p0;
+    Vector2d p1;
+    Vector2d v;
+    Vector2d o;
+    bool found;
+    for (size_t j = 0; j < p.size(); ++j) {
+        if (used[j]) {
+            continue;
+        }
+        p0 = q.tail<2>();
+        p1 = p[j].tail<2>();
+        if (p0(0) == p1(0) && p0(1) == p1(1)) {
+            continue;
+        }
+        v = p1 - p0;
+        o = Vector2d(-v(1), v(0));
+        if (o.dot(c - p0) < 0) {
+            continue;
+        }
+        found = true;
+        for (size_t k = 0; k < p.size(); ++k) {
+            if (k == j || (p[k](0) == q(0) && p[k](1) == q(1))) {
+                continue;
+            }
+            if (o.dot(p[k].tail<2>() - p0) < 0) {
+                found = false;
+                break;
+            }
+        }
+        if (found) {
+            used[j] = 1;
+            return j;
+        }
+    }
+    return -1;
+}
+
+void base_primitive::convex_hull(std::vector<Vector3d, aligned_allocator<Vector3d> >& res, const Vector3d& c,
+                                 const std::vector<Vector3d, aligned_allocator<Vector3d> >& p)
+{
+    std::vector<int> used;
+    used.resize(p.size(), 0);
+
+    int first_ind = 0;
+    int previous_ind = 0;
+    for (size_t i = 0; i < p.size(); ++i) {
+        int ind = find_next_point(p[i], c.tail<2>(), p, used);
+        if (ind != -1) {
+            used[i] = 1;
+            used[ind] = 1;
+            first_ind = i;
+            previous_ind = ind;
+            break;
+        }
+        used[i] = 1;
+    }
+    res.push_back(p[first_ind]);
+    while (previous_ind != first_ind) {
+        res.push_back(p[previous_ind]);
+        int ind = find_next_point(p[previous_ind], c.tail<2>(), p, used);
+        previous_ind = ind;
+        used[first_ind] = 0;
     }
 }
