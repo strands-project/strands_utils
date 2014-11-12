@@ -1,8 +1,0 @@
-#goal definition
-int32 distance
----
-#result definition
-bool open
----
-#feedback
-string status
