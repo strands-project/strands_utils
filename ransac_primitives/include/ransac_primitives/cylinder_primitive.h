@@ -7,14 +7,17 @@
 
 class cylinder_primitive : public base_primitive
 {
-private:
-    Eigen::Vector3d a;
-    Eigen::Vector3d c;
-    double r;
-    double h;
-    Eigen::Matrix<double, 3, 2> basis;
-    double max_radius;
-    static int cylinders_drawn;
+public:
+    // primitive shape parameters:
+    Eigen::Vector3d a; // main axis of cylinder
+    Eigen::Vector3d c; // center of cylinder, also along axis
+    double r; // radius of cylinder
+    double h; // height of cylinder
+
+    // other parameters:
+    Eigen::Matrix<double, 3, 2> basis; // arbitrary basis orthogonal to a
+    double max_radius; // maximum allowed radius
+    static int cylinders_drawn; // used to assign ID of cylinder
 public:
     bool construct(const Eigen::MatrixXd& points, const Eigen::MatrixXd& normals,
                    double inlier_threshold, double angle_threshold);
