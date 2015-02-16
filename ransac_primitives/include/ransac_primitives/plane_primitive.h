@@ -7,12 +7,16 @@
 
 class plane_primitive : public base_primitive
 {
-private:
-    Eigen::Vector4d p;
-    Eigen::Matrix<double, 3, 2> basis;
-    Eigen::Vector2d sizes;
-    Eigen::Quaterniond quat;
-    Eigen::Vector3d c;
+public:
+    // primitive shape parameters, with fitted smallest enclosing box of data:
+    Eigen::Vector4d p; // the plane equation parameters
+    Eigen::Vector3d c; // center of plane, also midpoint in fitted rectangle
+    Eigen::Matrix<double, 3, 2> basis; // arbitrary basis orthogonal to normal
+    Eigen::Vector2d sizes; // rough length of the sides of a fitted rectangle along basis
+
+    // other parameters:
+    Eigen::Quaterniond quat; // orientation of plane via rot matrix [p(1:3) basis]
+    // 2d convex hull in basis, backprojected into 3d
     std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > convex_hull;
 protected:
     void find_smallest_enclosing_box(Eigen::Vector2d& cmin, Eigen::Matrix2d& axes,

@@ -7,11 +7,14 @@
 
 class sphere_primitive : public base_primitive
 {
-private:
-    Eigen::Vector3d c;
-    double r;
-    double max_radius;
-    static int spheres_drawn;
+public:
+    // primitive shape parameters:
+    Eigen::Vector3d c; // the center of the sphere
+    double r; // the radius of the sphere
+
+    // other parameters:
+    double max_radius; // maximum allowed radius
+    static int spheres_drawn; // used to assign ID of sphere
     bool sphere_to_grid(Eigen::Vector2d& gridpt, const Eigen::Vector3d& spherept);
 public:
     bool construct(const Eigen::MatrixXd& points, const Eigen::MatrixXd& normals,
